@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "178830511133",
+    "project_id": "amba-8809b",
+    "storage_bucket": "amba-8809b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:178830511133:android:3258518b8f05e14a728af4",
+        "android_client_info": {
+          "package_name": "com.example.amba_project"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "178830511133-02bvdm41san4hnnvr3pc3q9sudafqgqd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqccpVLnW1ikQ83OQj_ESd5E33tS3T-lA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "178830511133-02bvdm41san4hnnvr3pc3q9sudafqgqd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
