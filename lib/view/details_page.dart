@@ -52,7 +52,7 @@ class DetailsPage extends StatelessWidget {
             slivers: [
               SliverAppBar(
                 pinned: true,
-                expandedHeight: 200,
+                expandedHeight: 220,
                 elevation: 0,
                 surfaceTintColor: theme.colorScheme.surface,
                 title: const Text('Perfil'),
@@ -72,7 +72,7 @@ class DetailsPage extends StatelessWidget {
 
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
                   child: Column(
                     children: [
                       _SectionCard(
@@ -221,18 +221,19 @@ class _ProfileHeader extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Align(
-          alignment: Alignment.centerLeft,
+          alignment: Alignment.center,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 32, 16, 18),
-            child: Row(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                const SizedBox(height: 20),
                 _Avatar(
                   name: member.name ?? '',
-                  radius: 34,
+                  radius: 44,
                   memberNumber: member.memberNumber ?? '',
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(height: 14),
                 Flexible(
                   child: Text(
                     (member.name ?? '—').trim(),
@@ -249,13 +250,6 @@ class _ProfileHeader extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _memberClassText(Member m) {
-    // se tiveres um campo "memberClass", usa-o aqui
-    // por agora: Gold / Silver etc.
-    // return (m.memberClass ?? 'Membro').toString();
-    return 'Membro';
   }
 }
 

@@ -418,6 +418,7 @@ class _Avatar extends StatelessWidget {
   }
 
   Widget _assetOrInitials(String initials, String? assetPath) {
+    print('###### ASSET PATH $assetPath');
     if (assetPath == null) {
       return _Initials(initials: initials);
     }
@@ -427,7 +428,8 @@ class _Avatar extends StatelessWidget {
       width: radius * 2,
       height: radius * 2,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) {
+      errorBuilder: (_, __, e) {
+        print('###### ERROR? $e');
         return _Initials(initials: initials);
       },
     );

@@ -35,5 +35,4 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/amba.jpg
-    - assets/gift.png
+    - assets/
