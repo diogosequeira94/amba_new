@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 class Member extends Equatable {
   final String? id;
   final String? name;
+  final String? avatarUrl;
   final String? memberNumber;
   final String? joiningDate;
   final String? dateOfBirth;
@@ -23,6 +24,7 @@ class Member extends Equatable {
     required this.isActive,
     required this.notes,
     this.age,
+    this.avatarUrl,
   });
 
   @override
@@ -37,6 +39,7 @@ class Member extends Equatable {
         isActive,
         notes,
         age,
+        avatarUrl,
       ];
 
 
@@ -51,6 +54,7 @@ class Member extends Equatable {
     final bool? isActive,
     final String? notes,
     final int? age,
+    final String? avatarUrl,
   }) {
     return Member(
       id: id ?? this.id,
@@ -63,6 +67,7 @@ class Member extends Equatable {
       isActive: isActive ?? this.isActive,
       notes: notes ?? this.notes,
       age: age ?? this.age,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
     );
   }
 
