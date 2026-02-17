@@ -2,7 +2,8 @@ import 'package:amba_new/cubit/details/details_cubit.dart';
 import 'package:amba_new/cubit/users/users_cubit.dart';
 import 'package:amba_new/models/member.dart';
 import 'package:amba_new/router/app_router.dart';
-import 'package:amba_new/view/widgets/contact_buttons_widget.dart' show ContactButtonsWidget;
+import 'package:amba_new/view/widgets/contact_buttons_widget.dart'
+    show ContactButtonsWidget;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -51,7 +52,7 @@ class DetailsPage extends StatelessWidget {
             slivers: [
               SliverAppBar(
                 pinned: true,
-                expandedHeight: 220,
+                expandedHeight: 200,
                 elevation: 0,
                 surfaceTintColor: theme.colorScheme.surface,
                 title: const Text('Perfil'),
@@ -108,7 +109,10 @@ class DetailsPage extends StatelessWidget {
                           title: 'CONTACTO',
                           children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                               child: ContactButtonsWidget(
                                 email: member.email ?? '',
                                 phone: member.phoneNumber ?? '',
@@ -163,10 +167,10 @@ class DetailsPage extends StatelessWidget {
   String _safe(String? v) => (v == null || v.trim().isEmpty) ? '—' : v.trim();
 
   Future<void> _showMyDialog(
-      BuildContext context,
-      Member member,
-      DetailsCubit cubit,
-      ) async {
+    BuildContext context,
+    Member member,
+    DetailsCubit cubit,
+  ) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -217,48 +221,26 @@ class _ProfileHeader extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Align(
-          alignment: Alignment.bottomLeft,
+          alignment: Alignment.centerLeft,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 18),
+            padding: const EdgeInsets.fromLTRB(16, 32, 16, 18),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _Avatar(
                   name: member.name ?? '',
-                  avatarUrl: avatarUrl.isEmpty ? null : avatarUrl,
                   radius: 34,
+                  memberNumber: member.memberNumber ?? '',
                 ),
                 const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        (member.name ?? '—').trim(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _BadgeChip(
-                            text: _memberClassText(member),
-                            icon: Icons.workspace_premium_outlined,
-                          ),
-                          if ((member.memberNumber ?? 0) != 0)
-                            _BadgeChip(
-                              text: 'Nº ${member.memberNumber}',
-                              icon: Icons.confirmation_number_outlined,
-                            ),
-                        ],
-                      ),
-                    ],
+                Flexible(
+                  child: Text(
+                    (member.name ?? '—').trim(),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -279,12 +261,12 @@ class _ProfileHeader extends StatelessWidget {
 
 class _Avatar extends StatelessWidget {
   final String name;
-  final String? avatarUrl; // URL remota
+  final String? memberNumber;
   final double radius;
 
   const _Avatar({
     required this.name,
-    required this.avatarUrl,
+    required this.memberNumber,
     this.radius = 28,
   });
 
@@ -292,65 +274,66 @@ class _Avatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    ImageProvider? provider;
-    if (avatarUrl != null && avatarUrl!.isNotEmpty) {
-      provider = NetworkImage(avatarUrl!);
-    }
-
     final initials = _initials(name);
+
+    final assetPath = memberNumber != null
+        ? 'assets/${memberNumber!}.jpg'
+        : null;
 
     return CircleAvatar(
       radius: radius,
       backgroundColor: theme.colorScheme.primary.withOpacity(0.15),
-      backgroundImage: provider,
-      child: provider == null
-          ? Text(
-        initials,
-        style: theme.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w800,
-          color: theme.colorScheme.primary,
-        ),
-      )
-          : null,
+      child: ClipOval(
+        child: assetPath == null
+            ? _Initials(initials: initials)
+            : Image.asset(
+                assetPath,
+                width: radius * 2,
+                height: radius * 2,
+                fit: BoxFit.cover,
+
+                // 👇 se o asset não existir → mostra iniciais
+                errorBuilder: (_, __, ___) {
+                  return _Initials(initials: initials);
+                },
+              ),
+      ),
     );
   }
 
   String _initials(String s) {
-    final parts = s.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final parts = s
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
+
     if (parts.isEmpty) return '?';
+
     final first = parts.first.characters.take(1).toString();
-    final last = parts.length > 1 ? parts.last.characters.take(1).toString() : '';
+    final last = parts.length > 1
+        ? parts.last.characters.take(1).toString()
+        : '';
+
     return (first + last).toUpperCase();
   }
 }
 
-class _BadgeChip extends StatelessWidget {
-  final String text;
-  final IconData icon;
-
-  const _BadgeChip({required this.text, required this.icon});
+class _Initials extends StatelessWidget {
+  final String initials;
+  const _Initials({required this.initials});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: theme.dividerColor.withOpacity(0.35)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: theme.colorScheme.primary),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-          ),
-        ],
+    return Center(
+      child: Text(
+        initials,
+        style: theme.textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w800,
+          color: theme.colorScheme.primary,
+        ),
       ),
     );
   }

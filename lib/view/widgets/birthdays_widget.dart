@@ -14,18 +14,11 @@ class BirthdaysWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 20.0, left: 10.0),
+      padding: const EdgeInsets.only(top: 10.0, left: 10.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8.0),
-            child: Text(
-              'Próximos Aniversários:',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20.0),
-            ),
-          ),
           if (birthdayMembers.isEmpty)
             const Text('Não há aniversários este mês.'),
           if (birthdayMembers.isNotEmpty)
@@ -61,12 +54,6 @@ class _ShortBirthdayList extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      'assets/gift.png',
-                      width: 26.0,
-                      height: 26.0,
-                    ),
-                    const SizedBox(width: 8.0),
                     Text(
                       '${member.name?.getFirstAndLastName()} - ',
                       style: const TextStyle(fontSize: 18.0),
@@ -121,11 +108,6 @@ class _BiggerBirthdaysWidgetState extends State<_BiggerBirthdaysWidget> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      'assets/gift.png',
-                      width: 26.0,
-                      height: 26.0,
-                    ),
                     const SizedBox(width: 8.0),
                     Text(
                       '${member.name?.getFirstAndLastName()} - ',
@@ -144,7 +126,7 @@ class _BiggerBirthdaysWidgetState extends State<_BiggerBirthdaysWidget> {
         Visibility(
           visible: !isExpanded,
           child: Padding(
-            padding: const EdgeInsets.only(top: 8.0),
+            padding: const EdgeInsets.only(top: 8.0, left: 8.0),
             child: GestureDetector(
               child: Text(
                 'Ver mais (${secondList.length})',
@@ -179,11 +161,6 @@ class _BiggerBirthdaysWidgetState extends State<_BiggerBirthdaysWidget> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Image.asset(
-                            'assets/gift.png',
-                            width: 26.0,
-                            height: 26.0,
-                          ),
                           const SizedBox(width: 8.0),
                           Text(
                             '${member.name?.getFirstAndLastName()} - ',
@@ -202,7 +179,7 @@ class _BiggerBirthdaysWidgetState extends State<_BiggerBirthdaysWidget> {
               Visibility(
                 visible: isExpanded,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
+                  padding: const EdgeInsets.only(top: 8.0, left: 8.0),
                   child: GestureDetector(
                     child: const Text(
                       'Ver menos',
