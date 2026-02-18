@@ -7,12 +7,7 @@ import 'package:flutter/cupertino.dart';
 
 part 'users_state.dart';
 
-enum OrderType {
-  alphabetical,
-  numerical,
-  onlyActives,
-  notActives,
-}
+enum OrderType { alphabetical, numerical, onlyActives, notActives }
 
 class UsersCubit extends Cubit<UsersState> {
   UsersCubit() : super(UsersInitial());
@@ -29,11 +24,13 @@ class UsersCubit extends Cubit<UsersState> {
     fetchCount++;
     emit(UsersInProgress());
     try {
-      QuerySnapshot querySnapshot =
-          await FirebaseFirestore.instance.collection('socios').get();
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('socios')
+          .get();
 
-      final memberList =
-          querySnapshot.docs.map((doc) => Member.fromDoc(doc)).toList();
+      final memberList = querySnapshot.docs
+          .map((doc) => Member.fromDoc(doc))
+          .toList();
 
       memberList.sort((a, b) {
         return int.parse(b.memberNumber!).compareTo(int.parse(a.memberNumber!));
@@ -54,9 +51,10 @@ class UsersCubit extends Cubit<UsersState> {
 
       emit(
         UsersSuccess(
-            personList: memberList,
-            fetchCount: fetchCount,
-            birthdayMemberList: birthdayMemberList),
+          personList: memberList,
+          fetchCount: fetchCount,
+          birthdayMemberList: birthdayMemberList,
+        ),
       );
     } on Object catch (e) {
       emit(UserFailure(errorMessage: e.toString()));
@@ -65,40 +63,48 @@ class UsersCubit extends Cubit<UsersState> {
 
   void searchBoxChanged(String query) {
     var tempList = allMemberList
-        .where((member) =>
-            (member.name!.toLowerCase().contains(query.toLowerCase())) ||
-            member.memberNumber!.contains(query) ||
-            (member.phoneNumber != null && member.phoneNumber!.contains(query)))
+        .where(
+          (member) =>
+              (member.name!.toLowerCase().contains(query.toLowerCase())) ||
+              member.memberNumber!.contains(query) ||
+              (member.phoneNumber != null &&
+                  member.phoneNumber!.contains(query)),
+        )
         .toList();
-    emit(SearchBoxChangedSuccess(
-      personList: tempList,
-      fetchCount: fetchCount,
-      birthdayMemberList: birthdayMemberList,
-    ));
+    emit(
+      SearchBoxChangedSuccess(
+        personList: tempList,
+        fetchCount: fetchCount,
+        birthdayMemberList: birthdayMemberList,
+      ),
+    );
   }
 
   void _getBirthdayMemberList(List<Member> members) {
-    final dayNow = DateTime.now().day;
-    final monthNow = DateTime.now().month;
-    final yearNow = DateTime.now().year;
+    final now = DateTime.now();
+    final dayNow = now.day;
+    final monthNow = now.month;
+    final yearNow = now.year;
 
-    final membersWithDateOfBirth = members
-        .where((member) =>
-            member.dateOfBirth != null && member.dateOfBirth!.isNotEmpty)
+    final membersWithDob = members
+        .where((m) => m.dateOfBirth != null && m.dateOfBirth!.trim().isNotEmpty)
         .toList();
 
-    final membersList = membersWithDateOfBirth
-        .where((member) =>
-            member.dateOfBirth != null &&
-            member.dateOfBirth!.getMonthNumber().contains(monthNow.toString()))
-        .toList();
+    for (final member in membersWithDob) {
+      final dob = member.dateOfBirth!;
 
-    for (var i = 0; i < membersList.length; i++) {
-      final member = membersList[i];
-      if (member.dateOfBirth == null ||
-          int.parse(member.dateOfBirth!.getDayNumber()) < dayNow) continue;
-      final memberAge =
-          yearNow - int.parse(member.dateOfBirth!.getYearOfBirth());
+      final dobMonth = int.tryParse(dob.getMonthNumber());
+      final dobDay = int.tryParse(dob.getDayNumber());
+      final dobYear = int.tryParse(dob.getYearOfBirth());
+
+      if (dobMonth == null || dobDay == null || dobYear == null) continue;
+
+      if (dobMonth != monthNow) continue;
+
+      // ✅ Só os que ainda não passaram (a partir de hoje)
+      if (dobDay < dayNow) continue;
+
+      final memberAge = yearNow - dobYear;
       birthdayMemberList.add(member.copyWith(age: memberAge));
     }
   }

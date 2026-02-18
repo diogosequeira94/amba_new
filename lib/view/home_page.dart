@@ -386,7 +386,6 @@ class _Avatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    print('######## MEMBER NUMBER $memberNumber');
     final initials = _initials(name);
     final assetPath = memberNumber != null
         ? 'assets/${memberNumber!}.jpg'
@@ -418,7 +417,6 @@ class _Avatar extends StatelessWidget {
   }
 
   Widget _assetOrInitials(String initials, String? assetPath) {
-    print('###### ASSET PATH $assetPath');
     if (assetPath == null) {
       return _Initials(initials: initials);
     }
@@ -428,8 +426,7 @@ class _Avatar extends StatelessWidget {
       width: radius * 2,
       height: radius * 2,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, e) {
-        print('###### ERROR? $e');
+      errorBuilder: (_, __, ___) {
         return _Initials(initials: initials);
       },
     );
