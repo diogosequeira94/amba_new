@@ -113,16 +113,6 @@ class _SplashScreenState extends State<SplashScreen>
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Secretário',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.65),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-
                       const SizedBox(height: 30),
 
                       // indicador discreto
