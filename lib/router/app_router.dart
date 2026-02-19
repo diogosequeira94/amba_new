@@ -8,6 +8,7 @@ import 'package:amba_new/view/amba_splash.dart';
 import 'package:amba_new/view/details_page.dart';
 import 'package:amba_new/view/form_page.dart';
 import 'package:amba_new/view/home_page.dart';
+import 'package:amba_new/view/main_screen.dart';
 import 'package:amba_new/view/messages_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -36,7 +37,8 @@ class AppRouter {
             BlocProvider<DetailsCubit>.value(
               value: _detailsCubit,
             ),
-          ], child: const HomePage()),
+          ], child: const MainScreen(),
+          ),
         );
       case '/details':
         return MaterialPageRoute(

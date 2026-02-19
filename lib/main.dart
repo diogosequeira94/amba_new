@@ -1,3 +1,4 @@
+import 'package:amba_new/bottom_bar/bottom_bar_bloc.dart';
 import 'package:amba_new/cubit/users/users_cubit.dart';
 import 'package:amba_new/firebase_options.dart';
 import 'package:amba_new/router/app_router.dart';
@@ -19,8 +20,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appRouter = AppRouter();
-    return BlocProvider(
-      create: (context) => UsersCubit()..fetchPerson(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) =>
+          UsersCubit()
+            ..fetchPerson(),
+        ),
+        BlocProvider(
+          create: (context) => BottomBarBloc(),
+        ),
+      ],
       child: MaterialApp(
         title: 'Sócios da AMBA',
         theme: ThemeData(
