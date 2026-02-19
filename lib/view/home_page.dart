@@ -271,6 +271,7 @@ class _MemberCard extends StatelessWidget {
   final String memberNumber;
   final bool isActive;
   final String? avatarUrl;
+  final int? avatarUpdatedAtMs; // <- NOVO (recomendado)
   final VoidCallback onTap;
 
   const _MemberCard({
@@ -279,6 +280,7 @@ class _MemberCard extends StatelessWidget {
     required this.isActive,
     required this.avatarUrl,
     required this.onTap,
+    this.avatarUpdatedAtMs,
   });
 
   @override
@@ -298,8 +300,8 @@ class _MemberCard extends StatelessWidget {
               _Avatar(
                 name: name,
                 avatarUrl: avatarUrl,
+                avatarUpdatedAtMs: avatarUpdatedAtMs,
                 radius: 22,
-                memberNumber: memberNumber,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -373,13 +375,13 @@ class _StatusChip extends StatelessWidget {
 class _Avatar extends StatelessWidget {
   final String name;
   final String? avatarUrl;
-  final String? memberNumber;
+  final int? avatarUpdatedAtMs; // <- NOVO (cache-bust)
   final double radius;
 
   const _Avatar({
     required this.name,
     required this.avatarUrl,
-    required this.memberNumber,
+    this.avatarUpdatedAtMs,
     this.radius = 22,
   });
 
@@ -387,49 +389,39 @@ class _Avatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final initials = _initials(name);
-    final assetPath = memberNumber != null
-        ? 'assets/${memberNumber!}.jpg'
-        : null;
+
+    final networkUrl = _networkUrlWithCacheBust(avatarUrl, avatarUpdatedAtMs);
 
     return CircleAvatar(
       radius: radius,
       backgroundColor: theme.colorScheme.primary.withOpacity(0.15),
-      child: ClipOval(child: _buildImageOrFallback(initials, assetPath)),
+      child: ClipOval(
+        child: networkUrl != null
+            ? Image.network(
+                networkUrl,
+                width: radius * 2,
+                height: radius * 2,
+                fit: BoxFit.cover,
+                // enquanto carrega
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return _Initials(initials: initials);
+                },
+                // se falhar
+                errorBuilder: (_, __, ___) => _Initials(initials: initials),
+              )
+            : _Initials(initials: initials),
+      ),
     );
   }
 
-  Widget _buildImageOrFallback(String initials, String? assetPath) {
-    // 1️⃣ prioridade: imagem remota
-    if (avatarUrl != null && avatarUrl!.isNotEmpty) {
-      return Image.network(
-        avatarUrl!,
-        width: radius * 2,
-        height: radius * 2,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) {
-          return _assetOrInitials(initials, assetPath);
-        },
-      );
-    }
+  String? _networkUrlWithCacheBust(String? url, int? updatedAtMs) {
+    final u = (url ?? '').trim();
+    if (u.isEmpty) return null;
+    if (updatedAtMs == null) return u;
 
-    // 2️⃣ asset local
-    return _assetOrInitials(initials, assetPath);
-  }
-
-  Widget _assetOrInitials(String initials, String? assetPath) {
-    if (assetPath == null) {
-      return _Initials(initials: initials);
-    }
-
-    return Image.asset(
-      assetPath,
-      width: radius * 2,
-      height: radius * 2,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) {
-        return _Initials(initials: initials);
-      },
-    );
+    final sep = u.contains('?') ? '&' : '?';
+    return '$u${sep}v=$updatedAtMs';
   }
 
   String _initials(String s) {

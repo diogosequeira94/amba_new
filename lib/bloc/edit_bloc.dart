@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:amba_new/models/form/date_of_birth.dart';
 import 'package:amba_new/models/form/email.dart';
@@ -11,6 +12,7 @@ import 'package:amba_new/models/member.dart';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:formz/formz.dart';
 
 part 'edit_event.dart';
@@ -26,64 +28,47 @@ class EditBloc extends Bloc<EditEvent, EditState> {
     on<JoiningDateChanged>(_onJoiningDateChanged);
     on<NotesChanged>(_onNotesChanged);
     on<IsActiveCheckBoxChanged>(_onActiveCheckBoxChanged);
+
+    on<PhotoPicked>(_onPhotoPicked);
+    on<PhotoCleared>(_onPhotoCleared);
+
     on<FormSubmitted>(_onFormSubmitted);
     on<EditingPressed>(_onEditingPressed);
   }
 
+  // ---------------------------
+  // Form fields
+  // ---------------------------
+
   void _onEmailChanged(EmailChanged event, Emitter<EditState> emit) {
-    print('EMAIL WAS CALLED');
     final email = Email.dirty(event.email);
     emit(
       state.copyWith(
         email: email.isValid ? email : Email.pure(event.email),
-        isValid: Formz.validate([
-          email,
-          state.name,
-          state.dateOfBirth,
-          state.joiningDate,
-          state.memberNumber,
-          state.phone,
-          state.notes,
-        ]),
+        isValid: _validateAll(email: email),
       ),
     );
   }
 
   void _onNameChanged(NameChanged event, Emitter<EditState> emit) {
-    print('NAME WAS CALLED');
     final name = Name.dirty(event.name);
-    print('### THE NAME IS: ${name.value}');
     emit(
       state.copyWith(
         name: name,
-        isValid: Formz.validate([
-          state.email,
-          name,
-          state.dateOfBirth,
-          state.joiningDate,
-          state.memberNumber,
-          state.phone,
-          state.notes,
-        ]),
+        isValid: _validateAll(name: name),
       ),
     );
   }
 
   void _onMemberNumberChanged(
-      MemberNumberChanged event, Emitter<EditState> emit) {
+      MemberNumberChanged event,
+      Emitter<EditState> emit,
+      ) {
     final memberNumber = MemberNumber.dirty(event.memberNumber);
     emit(
       state.copyWith(
         memberNumber: memberNumber,
-        isValid: Formz.validate([
-          state.email,
-          memberNumber,
-          state.name,
-          state.dateOfBirth,
-          state.joiningDate,
-          state.phone,
-          state.notes,
-        ]),
+        isValid: _validateAll(memberNumber: memberNumber),
       ),
     );
   }
@@ -93,71 +78,33 @@ class EditBloc extends Bloc<EditEvent, EditState> {
     emit(
       state.copyWith(
         phone: phone,
-        isValid: Formz.validate([
-          state.email,
-          phone,
-          state.name,
-          state.dateOfBirth,
-          state.joiningDate,
-          state.memberNumber,
-          state.notes,
-        ]),
+        isValid: _validateAll(phone: phone),
       ),
     );
   }
 
   void _onDateOfBirthChanged(
-      DateOfBirthChanged event, Emitter<EditState> emit) {
-    final dateOfBirth = DateOfBirth.dirty(event.dateOfBirth);
+      DateOfBirthChanged event,
+      Emitter<EditState> emit,
+      ) {
+    final dob = DateOfBirth.dirty(event.dateOfBirth);
     emit(
       state.copyWith(
-        dateOfBirth: dateOfBirth,
-        isValid: Formz.validate([
-          state.email,
-          dateOfBirth,
-          state.name,
-          state.joiningDate,
-          state.memberNumber,
-          state.phone,
-          state.notes,
-        ]),
+        dateOfBirth: dob,
+        isValid: _validateAll(dateOfBirth: dob),
       ),
     );
   }
 
   void _onJoiningDateChanged(
-      JoiningDateChanged event, Emitter<EditState> emit) {
+      JoiningDateChanged event,
+      Emitter<EditState> emit,
+      ) {
     final joiningDate = JoiningDate.dirty(event.joiningDate);
     emit(
       state.copyWith(
         joiningDate: joiningDate,
-        isValid: Formz.validate([
-          state.email,
-          joiningDate,
-          state.name,
-          state.dateOfBirth,
-          state.memberNumber,
-          state.phone,
-          state.notes,
-        ]),
-      ),
-    );
-  }
-
-  void _onActiveCheckBoxChanged(
-      IsActiveCheckBoxChanged event, Emitter<EditState> emit) {
-    emit(
-      state.copyWith(
-        isActive: event.isActive,
-        isValid: Formz.validate([
-          state.email,
-          state.joiningDate,
-          state.name,
-          state.dateOfBirth,
-          state.memberNumber,
-          state.phone,
-          state.notes,
-        ]),
+        isValid: _validateAll(joiningDate: joiningDate),
       ),
     );
   }
@@ -167,29 +114,70 @@ class EditBloc extends Bloc<EditEvent, EditState> {
     emit(
       state.copyWith(
         notes: notes,
-        isValid: Formz.validate([
-          state.email,
-          notes,
-          state.name,
-          state.dateOfBirth,
-          state.joiningDate,
-          state.memberNumber,
-          state.phone,
-        ]),
+        isValid: _validateAll(notes: notes),
       ),
     );
   }
 
+  void _onActiveCheckBoxChanged(
+      IsActiveCheckBoxChanged event,
+      Emitter<EditState> emit,
+      ) {
+    emit(
+      state.copyWith(
+        isActive: event.isActive,
+        isValid: _validateAll(),
+      ),
+    );
+  }
+
+  bool _validateAll({
+    Email? email,
+    Name? name,
+    DateOfBirth? dateOfBirth,
+    JoiningDate? joiningDate,
+    MemberNumber? memberNumber,
+    Phone? phone,
+    Notes? notes,
+  }) {
+    return Formz.validate([
+      email ?? state.email,
+      name ?? state.name,
+      dateOfBirth ?? state.dateOfBirth,
+      joiningDate ?? state.joiningDate,
+      memberNumber ?? state.memberNumber,
+      phone ?? state.phone,
+      notes ?? state.notes,
+    ]);
+  }
+
+  // ---------------------------
+  // Photo
+  // ---------------------------
+
+  void _onPhotoPicked(PhotoPicked event, Emitter<EditState> emit) {
+    emit(state.copyWith(localPhoto: event.file, photoChanged: true));
+  }
+
+  void _onPhotoCleared(PhotoCleared event, Emitter<EditState> emit) {
+    emit(state.copyWith(localPhoto: null, photoChanged: false));
+  }
+
+  // ---------------------------
+  // Submit (Create)
+  // ---------------------------
+
   Future<void> _onFormSubmitted(
-    FormSubmitted event,
-    Emitter<EditState> emit,
-  ) async {
-    print('Emitting IN PROGRESS!!');
+      FormSubmitted event,
+      Emitter<EditState> emit,
+      ) async {
     emit(state.copyWith(status: FormzSubmissionStatus.inProgress));
 
     try {
       final socios = FirebaseFirestore.instance.collection('socios');
-      await socios.add({
+
+      // 1) Create doc first (need its ID for Storage path)
+      final docRef = await socios.add({
         "name": state.name.value,
         "email": state.email.value,
         "dateOfBirth": state.dateOfBirth.value,
@@ -199,25 +187,57 @@ class EditBloc extends Bloc<EditEvent, EditState> {
         "joiningDate": state.joiningDate.value,
         "notes": state.notes.value,
       });
-      await Future<void>.delayed(const Duration(seconds: 1));
-      emit(state.copyWith(status: FormzSubmissionStatus.success));
-      print('Emitting SCUCCESS!!');
+
+      // 2) If photo selected, upload + update doc
+      if (state.photoChanged && state.localPhoto != null) {
+        final url = await _uploadMemberPhoto(
+          memberId: docRef.id,
+          file: state.localPhoto!,
+        );
+
+        await docRef.update({
+          "avatarUrl": url,
+          "avatarUpdatedAt": FieldValue.serverTimestamp(),
+        });
+      }
+
+      emit(
+        state.copyWith(
+          status: FormzSubmissionStatus.success,
+          localPhoto: null,
+          photoChanged: false,
+        ),
+      );
     } on Object catch (e) {
       print(e);
       emit(state.copyWith(status: FormzSubmissionStatus.failure));
     }
   }
 
+  // ---------------------------
+  // Submit (Edit)
+  // ---------------------------
+
   Future<void> _onEditingPressed(
-    EditingPressed event,
-    Emitter<EditState> emit,
-  ) async {
-    print('Editing IN PROGRESS!!');
+      EditingPressed event,
+      Emitter<EditState> emit,
+      ) async {
     emit(state.copyWith(status: FormzSubmissionStatus.inProgress));
 
     try {
       final socios = FirebaseFirestore.instance.collection('socios');
-      await socios.doc(event.memberId).update({
+
+      // 1) Upload photo if changed
+      String? uploadedUrl;
+      if (state.photoChanged && state.localPhoto != null) {
+        uploadedUrl = await _uploadMemberPhoto(
+          memberId: event.memberId,
+          file: state.localPhoto!,
+        );
+      }
+
+      // 2) Update Firestore
+      final updateData = <String, dynamic>{
         "name": state.name.value,
         "email": state.email.value,
         "dateOfBirth": state.dateOfBirth.value,
@@ -226,8 +246,16 @@ class EditBloc extends Bloc<EditEvent, EditState> {
         "isActive": state.isActive,
         "joiningDate": state.joiningDate.value,
         "notes": state.notes.value,
-      });
+      };
 
+      if (uploadedUrl != null) {
+        updateData["avatarUrl"] = uploadedUrl;
+        updateData["avatarUpdatedAt"] = FieldValue.serverTimestamp();
+      }
+
+      await socios.doc(event.memberId).update(updateData);
+
+      // 3) Emit success (+ newMember for your DetailsCubit)
       final newMember = Member(
         id: event.memberId,
         name: state.name.value,
@@ -238,12 +266,41 @@ class EditBloc extends Bloc<EditEvent, EditState> {
         email: state.email.value,
         isActive: state.isActive,
         notes: state.notes.value,
+        avatarUrl: uploadedUrl, // may be null if unchanged
       );
-      await Future<void>.delayed(const Duration(seconds: 1));
-      emit(state.copyWith(status: FormzSubmissionStatus.success, newMember: newMember));
+
+      print('################ SUCCESS EDIT $uploadedUrl');
+      emit(
+        state.copyWith(
+          status: FormzSubmissionStatus.success,
+          newMember: newMember,
+          localPhoto: null,
+          photoChanged: false,
+        ),
+      );
     } on Object catch (e) {
-      print(e);
+      print('################ ERROR ERROR EDIT $e');
       emit(state.copyWith(status: FormzSubmissionStatus.failure));
     }
+  }
+
+  // ---------------------------
+  // Storage helper
+  // ---------------------------
+
+  Future<String> _uploadMemberPhoto({
+    required String memberId,
+    required File file,
+  }) async {
+    final path = 'users/$memberId/avatar.jpg';
+    final ref = FirebaseStorage.instance.ref(path);
+
+    final metadata = SettableMetadata(
+      contentType: 'image/jpeg',
+      cacheControl: 'public,max-age=86400',
+    );
+
+    await ref.putFile(file, metadata);
+    return ref.getDownloadURL();
   }
 }

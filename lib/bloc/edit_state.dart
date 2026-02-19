@@ -13,6 +13,9 @@ class EditState extends Equatable {
     this.isValid = false,
     this.status = FormzSubmissionStatus.initial,
     this.newMember,
+    this.localPhoto,
+    this.photoUrl,
+    this.photoChanged = false,
   });
 
   final Name name;
@@ -26,6 +29,9 @@ class EditState extends Equatable {
   final bool isValid;
   final FormzSubmissionStatus status;
   final Member? newMember;
+  final File? localPhoto;
+  final String? photoUrl;
+  final bool photoChanged;
 
   EditState copyWith({
     Name? name,
@@ -39,6 +45,9 @@ class EditState extends Equatable {
     bool? isValid,
     FormzSubmissionStatus? status,
     Member? newMember,
+    File? localPhoto,
+    String? photoUrl,
+    bool? photoChanged,
   }) {
     return EditState(
       name: name ?? this.name,
@@ -52,20 +61,26 @@ class EditState extends Equatable {
       isValid: isValid ?? this.isValid,
       status: status ?? this.status,
       newMember: newMember ?? this.newMember,
+      localPhoto: localPhoto ?? this.localPhoto,
+      photoUrl: photoUrl ?? this.photoUrl,
+      photoChanged: photoChanged ?? this.photoChanged,
     );
   }
 
   @override
   List<Object?> get props => [
-        name,
-        joiningDate,
-        memberNumber,
-        dateOfBirth,
-        phone,
-        email,
-        isActive,
-        notes,
-        status,
-        newMember,
-      ];
+    name,
+    joiningDate,
+    memberNumber,
+    dateOfBirth,
+    phone,
+    email,
+    isActive,
+    notes,
+    status,
+    newMember,
+    localPhoto,
+    photoUrl,
+    photoChanged,
+  ];
 }

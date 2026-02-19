@@ -205,7 +205,8 @@ class _ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final avatarUrl = (member.avatarUrl ?? '').trim(); // <-- cria este campo
+    final avatarUrl = (member.avatarUrl ?? '').trim();
+    final avatarUpdatedAtMs = member.avatarUpdatedAtMs; // opcional (cache-bust)
 
     return Container(
       decoration: BoxDecoration(
@@ -232,6 +233,8 @@ class _ProfileHeader extends StatelessWidget {
                   name: member.name ?? '',
                   radius: 44,
                   memberNumber: member.memberNumber ?? '',
+                  avatarUrl: avatarUrl.isEmpty ? null : avatarUrl,
+                  avatarUpdatedAtMs: avatarUpdatedAtMs,
                 ),
                 const SizedBox(height: 14),
                 Flexible(
@@ -258,41 +261,60 @@ class _Avatar extends StatelessWidget {
   final String? memberNumber;
   final double radius;
 
+  /// NOVO: vem do Firestore (Storage download URL)
+  final String? avatarUrl;
+
+  /// NOVO (opcional): para cache-bust
+  final int? avatarUpdatedAtMs;
+
   const _Avatar({
     required this.name,
     required this.memberNumber,
     this.radius = 28,
+    this.avatarUrl,
+    this.avatarUpdatedAtMs,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     final initials = _initials(name);
 
-    final assetPath = memberNumber != null
-        ? 'assets/${memberNumber!}.jpg'
-        : null;
+    // Se tiver avatarUrl, tenta Network primeiro
+    final networkUrl = _networkUrlWithCacheBust(avatarUrl, avatarUpdatedAtMs);
 
     return CircleAvatar(
       radius: radius,
       backgroundColor: theme.colorScheme.primary.withOpacity(0.15),
       child: ClipOval(
-        child: assetPath == null
-            ? _Initials(initials: initials)
-            : Image.asset(
-                assetPath,
+        child: networkUrl != null
+            ? Image.network(
+                networkUrl,
                 width: radius * 2,
                 height: radius * 2,
                 fit: BoxFit.cover,
-
-                // 👇 se o asset não existir → mostra iniciais
-                errorBuilder: (_, __, ___) {
+                // se falhar, cai para iniciais
+                errorBuilder: (_, __, ___) => _Initials(initials: initials),
+                // opcional: enquanto carrega, mostra iniciais
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
                   return _Initials(initials: initials);
                 },
-              ),
+              )
+            : _Initials(initials: initials),
       ),
     );
+  }
+
+  String? _networkUrlWithCacheBust(String? url, int? updatedAtMs) {
+    final u = (url ?? '').trim();
+    if (u.isEmpty) return null;
+
+    if (updatedAtMs == null) return u;
+
+    // Se já tiver querystring, usa &; senão ?
+    final sep = u.contains('?') ? '&' : '?';
+    return '$u${sep}v=$updatedAtMs';
   }
 
   String _initials(String s) {

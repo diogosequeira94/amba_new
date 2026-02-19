@@ -79,6 +79,17 @@ class IsActiveCheckBoxChanged extends EditEvent {
   List<Object> get props => [isActive];
 }
 
+class PhotoPicked extends EditEvent {
+  const PhotoPicked({required this.file});
+
+  final File file;
+
+  @override
+  List<Object> get props => [file.path];
+}
+
+class PhotoCleared extends EditEvent {}
+
 class FormSubmitted extends EditEvent {}
 
 class EditingPressed extends EditEvent {

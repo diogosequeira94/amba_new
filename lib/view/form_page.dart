@@ -3,6 +3,7 @@ import 'package:amba_new/cubit/details/details_cubit.dart';
 import 'package:amba_new/cubit/users/users_cubit.dart';
 import 'package:amba_new/models/member.dart';
 import 'package:amba_new/utils/date_input_formatter.dart';
+import 'package:amba_new/view/widgets/clickable_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -157,6 +158,15 @@ class _FormPageState extends State<FormPage> {
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 110),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
+                      const SizedBox(height: 8),
+                      ClickableAvatar(
+                        member: widget.member,
+                        localPhoto: state.localPhoto,
+                        enabled: !isSubmitting,
+                        onPhotoPicked: (file) => editBloc.add(PhotoPicked(file: file)),
+                        onRemovePhoto: () => editBloc.add(PhotoCleared()),
+                      ),
+                      const SizedBox(height: 12),
                       _SectionCard(
                         title: 'INFORMAÇÃO PRINCIPAL',
                         children: [
