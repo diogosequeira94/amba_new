@@ -79,6 +79,12 @@ class DetailsPage extends StatelessWidget {
                         title: 'INFORMAÇÃO DE CONTA',
                         children: [
                           _InfoTile(
+                            icon: Icons.person_outline,
+                            label: 'Nome Completo',
+                            value: _safe(member.name?.toString()),
+                            multiline: true,
+                          ),
+                          _InfoTile(
                             icon: Icons.badge_outlined,
                             label: 'Número de Sócio',
                             value: _safe(member.memberNumber?.toString()),
@@ -205,7 +211,8 @@ class _ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final avatarUrl = (member.avatarUrl ?? '').trim(); // <-- cria este campo
+    final fullName = (member.name ?? '').trim();
+    final displayName = _firstAndLast(fullName);
 
     return Container(
       decoration: BoxDecoration(
@@ -229,14 +236,14 @@ class _ProfileHeader extends StatelessWidget {
               children: [
                 const SizedBox(height: 20),
                 _Avatar(
-                  name: member.name ?? '',
-                  radius: 44,
+                  name: fullName,
+                  radius: 50,
                   memberNumber: member.memberNumber ?? '',
                 ),
                 const SizedBox(height: 14),
                 Flexible(
                   child: Text(
-                    (member.name ?? '—').trim(),
+                    displayName.isEmpty ? '—' : displayName,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.headlineSmall?.copyWith(
@@ -250,6 +257,21 @@ class _ProfileHeader extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _firstAndLast(String name) {
+    if (name.isEmpty) return '';
+
+    final parts = name
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
+
+    if (parts.isEmpty) return '';
+    if (parts.length == 1) return parts.first;
+
+    return '${parts.first} ${parts.last}';
   }
 }
 
