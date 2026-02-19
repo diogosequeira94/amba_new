@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:amba_new/view/widgets/transactions/filters_card.dart';
 import 'package:amba_new/view/widgets/transactions/summary_row.dart';
 import 'package:amba_new/view/widgets/transactions/transaction_tile.dart';
-import 'package:amba_new/view/widgets/transactions/tx_ui.dart';
-import 'package:flutter/material.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({Key? key}) : super(key: key);
