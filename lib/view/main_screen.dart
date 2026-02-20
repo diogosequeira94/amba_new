@@ -3,7 +3,7 @@ import 'package:amba_new/cubit/quota/add_quota_cubit.dart';
 import 'package:amba_new/router/app_router.dart';
 import 'package:amba_new/view/add_quota_page.dart';
 import 'package:amba_new/view/home_page.dart';
-import 'package:amba_new/view/transactions_page.dart';
+import 'package:amba_new/view/quotas_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -40,7 +40,7 @@ class _MainScreenState extends State<MainScreen> {
           // ✅ Nada de FAB aqui (HomePage já tem FAB)
           body: IndexedStack(
             index: index,
-            children: const [HomePage(), TransactionsPage()],
+            children: const [HomePage(), QuotasPage()],
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {

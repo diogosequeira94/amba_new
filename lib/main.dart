@@ -1,4 +1,5 @@
 import 'package:amba_new/bottom_bar/bottom_bar_bloc.dart';
+import 'package:amba_new/cubit/quota/quotas_cubit.dart';
 import 'package:amba_new/cubit/users/users_cubit.dart';
 import 'package:amba_new/firebase_options.dart';
 import 'package:amba_new/router/app_router.dart';
@@ -8,9 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -23,19 +22,17 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) =>
-          UsersCubit()
-            ..fetchPerson(),
+          create: (context) {
+            final currentYear = DateTime.now().year;
+            return QuotasCubit()..fetchQuotas(year: currentYear);
+          },
         ),
-        BlocProvider(
-          create: (context) => BottomBarBloc(),
-        ),
+        BlocProvider(create: (context) => UsersCubit()..fetchPerson()),
+        BlocProvider(create: (context) => BottomBarBloc()),
       ],
       child: MaterialApp(
         title: 'Sócios da AMBA',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+        theme: ThemeData(primarySwatch: Colors.blue),
         debugShowCheckedModeBanner: false,
         onGenerateRoute: appRouter.onGenerateRoute,
       ),

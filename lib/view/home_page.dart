@@ -1,6 +1,5 @@
 import 'package:amba_new/cubit/details/details_cubit.dart';
 import 'package:amba_new/cubit/users/users_cubit.dart';
-import 'package:amba_new/router/app_router.dart';
 import 'package:amba_new/view/widgets/searchbox.dart';
 import 'package:amba_new/view/widgets/birthdays_widget.dart';
 import 'package:flutter/material.dart';
@@ -14,16 +13,6 @@ class HomePage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(
-            context,
-            '/create',
-            arguments: const FormPageArguments(isEditing: false),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
       body: BlocBuilder<UsersCubit, UsersState>(
         builder: (context, state) {
           final isLoading = state is UsersInProgress;

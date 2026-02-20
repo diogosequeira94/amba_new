@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 
 class TransactionTile extends StatelessWidget {
   final TxUi tx;
-  const TransactionTile({super.key, required this.tx});
+  final VoidCallback? onLongPress;
+
+  const TransactionTile({super.key, required this.tx, this.onLongPress});
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +19,6 @@ class TransactionTile extends StatelessWidget {
           horizontal: 14,
           vertical: 10,
         ),
-
-        /// Ícone fixo de quota
         leading: Container(
           width: 44,
           height: 44,
@@ -31,22 +31,16 @@ class TransactionTile extends StatelessWidget {
             color: theme.colorScheme.primary,
           ),
         ),
-
-        /// Nome do membro
         title: Text(
           tx.title,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w800,
           ),
         ),
-
-        /// Meses + Data
         subtitle: Text(
           '${tx.subtitle} • ${_fmtDate(tx.date)}'
           '${tx.quotaCount > 1 ? ' • ${tx.quotaCount} meses' : ''}',
         ),
-
-        /// Valor total pago
         trailing: Text(
           _fmtEuro(tx.total),
           style: theme.textTheme.titleMedium?.copyWith(
@@ -54,10 +48,7 @@ class TransactionTile extends StatelessWidget {
             color: theme.colorScheme.primary,
           ),
         ),
-
-        onTap: () {
-          // Futuro: navegar para detalhes da quota
-        },
+        onLongPress: onLongPress, // ✅ aqui
       ),
     );
   }
@@ -67,7 +58,5 @@ class TransactionTile extends StatelessWidget {
     return '${two(d.day)}/${two(d.month)}/${d.year}';
   }
 
-  String _fmtEuro(double v) {
-    return '${v.toStringAsFixed(2)} €';
-  }
+  String _fmtEuro(double v) => '${v.toStringAsFixed(2)} €';
 }

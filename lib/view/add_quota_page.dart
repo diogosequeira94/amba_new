@@ -1,5 +1,6 @@
 import 'package:amba_new/cubit/quota/add_quota_cubit.dart';
 import 'package:amba_new/cubit/quota/add_quota_state.dart';
+import 'package:amba_new/cubit/quota/quotas_cubit.dart';
 import 'package:amba_new/cubit/users/users_cubit.dart';
 import 'package:amba_new/models/member.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +61,7 @@ class _AddQuotaPageState extends State<AddQuotaPage> {
 
         if (state is AddQuotaSuccess) {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          context.read<QuotasCubit>().fetchQuotas(year: 2026);
           Navigator.pop(context);
         }
 

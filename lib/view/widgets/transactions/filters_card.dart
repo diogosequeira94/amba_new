@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 
 class FiltersCard extends StatelessWidget {
   final int year;
-  final int? month;
+  final int month; // 0 = ano inteiro
   final ValueChanged<int> onYearChanged;
-  final ValueChanged<int?> onMonthChanged;
+  final ValueChanged<int> onMonthChanged;
 
   const FiltersCard({
     super.key,
@@ -40,7 +40,6 @@ class FiltersCard extends StatelessWidget {
               spacing: 10,
               runSpacing: 10,
               children: [
-                /// 📆 ANO
                 ChipMenu<int>(
                   icon: Icons.calendar_today_outlined,
                   label: '$year',
@@ -52,12 +51,11 @@ class FiltersCard extends StatelessWidget {
                   onSelected: onYearChanged,
                 ),
 
-                /// 📅 MÊS
-                ChipMenu<int?>(
+                ChipMenu<int>(
                   icon: Icons.date_range_outlined,
-                  label: month == null ? 'Ano inteiro' : _monthName(month!),
-                  items: const [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-                  itemLabel: (v) => v == null ? 'Ano inteiro' : _monthName(v),
+                  label: month == 0 ? 'Ano inteiro' : _monthName(month),
+                  items: const [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                  itemLabel: (v) => v == 0 ? 'Ano inteiro' : _monthName(v),
                   onSelected: onMonthChanged,
                 ),
               ],
@@ -70,18 +68,8 @@ class FiltersCard extends StatelessWidget {
 
   static String _monthName(int m) {
     const months = [
-      'Jan',
-      'Fev',
-      'Mar',
-      'Abr',
-      'Mai',
-      'Jun',
-      'Jul',
-      'Ago',
-      'Set',
-      'Out',
-      'Nov',
-      'Dez',
+      'Jan','Fev','Mar','Abr','Mai','Jun',
+      'Jul','Ago','Set','Out','Nov','Dez',
     ];
     return months[m - 1];
   }

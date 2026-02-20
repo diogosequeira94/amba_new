@@ -8,6 +8,7 @@ class ChipMenu<T> extends StatelessWidget {
   final ValueChanged<T> onSelected;
 
   const ChipMenu({
+    super.key,
     required this.icon,
     required this.label,
     required this.items,
@@ -20,11 +21,13 @@ class ChipMenu<T> extends StatelessWidget {
     final theme = Theme.of(context);
 
     return PopupMenuButton<T>(
-      onSelected: onSelected,
+      onSelected: (value) {
+        onSelected(value); // ✅ NÃO bloquear null
+      },
       itemBuilder: (context) {
-        return items
-            .map((e) => PopupMenuItem<T>(value: e, child: Text(itemLabel(e))))
-            .toList();
+        return items.map((item) {
+          return PopupMenuItem<T>(value: item, child: Text(itemLabel(item)));
+        }).toList();
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
