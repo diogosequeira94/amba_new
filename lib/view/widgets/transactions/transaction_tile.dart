@@ -3,9 +3,15 @@ import 'package:flutter/material.dart';
 
 class TransactionTile extends StatelessWidget {
   final TxUi tx;
+  final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
-  const TransactionTile({super.key, required this.tx, this.onLongPress});
+  const TransactionTile({
+    super.key,
+    required this.tx,
+    this.onTap,
+    this.onLongPress,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +25,7 @@ class TransactionTile extends StatelessWidget {
           horizontal: 14,
           vertical: 10,
         ),
+
         leading: Container(
           width: 44,
           height: 44,
@@ -31,16 +38,19 @@ class TransactionTile extends StatelessWidget {
             color: theme.colorScheme.primary,
           ),
         ),
+
         title: Text(
           tx.title,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w800,
           ),
         ),
+
         subtitle: Text(
           '${tx.subtitle} • ${_fmtDate(tx.date)}'
           '${tx.quotaCount > 1 ? ' • ${tx.quotaCount} meses' : ''}',
         ),
+
         trailing: Text(
           _fmtEuro(tx.total),
           style: theme.textTheme.titleMedium?.copyWith(
@@ -48,7 +58,9 @@ class TransactionTile extends StatelessWidget {
             color: theme.colorScheme.primary,
           ),
         ),
-        onLongPress: onLongPress, // ✅ aqui
+
+        onTap: onTap,
+        onLongPress: onLongPress,
       ),
     );
   }

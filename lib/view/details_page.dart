@@ -4,6 +4,7 @@ import 'package:amba_new/models/member.dart';
 import 'package:amba_new/router/app_router.dart';
 import 'package:amba_new/view/widgets/contact_buttons_widget.dart'
     show ContactButtonsWidget;
+import 'package:amba_new/view/widgets/member_quotas.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -75,7 +76,7 @@ class DetailsPage extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
                   child: Column(
                     children: [
-                      _SectionCard(
+                      SectionCard(
                         title: 'INFORMAÇÃO DE CONTA',
                         children: [
                           _InfoTile(
@@ -108,10 +109,13 @@ class DetailsPage extends StatelessWidget {
                       ),
 
                       const SizedBox(height: 12),
+                      MemberQuotasSection(member: member),
+
+                      const SizedBox(height: 12),
 
                       if ((member.email ?? '').isNotEmpty ||
                           (member.phoneNumber ?? '').isNotEmpty)
-                        _SectionCard(
+                        SectionCard(
                           title: 'CONTACTO',
                           children: [
                             Padding(
@@ -141,7 +145,7 @@ class DetailsPage extends StatelessWidget {
 
                       const SizedBox(height: 12),
 
-                      _SectionCard(
+                      SectionCard(
                         title: 'DADOS DE SÓCIO',
                         children: [
                           _InfoTile(
@@ -355,11 +359,11 @@ class _Initials extends StatelessWidget {
   }
 }
 
-class _SectionCard extends StatelessWidget {
+class SectionCard extends StatelessWidget {
   final String title;
   final List<Widget> children;
 
-  const _SectionCard({required this.title, required this.children});
+  const SectionCard({super.key, required this.title, required this.children});
 
   @override
   Widget build(BuildContext context) {

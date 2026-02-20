@@ -1,6 +1,7 @@
 import 'package:amba_new/cubit/quota/quotas_cubit.dart';
 import 'package:amba_new/cubit/quota/quotas_state.dart';
 import 'package:amba_new/view/widgets/transactions/tx_ui.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:amba_new/view/widgets/transactions/filters_card.dart';
@@ -136,7 +137,12 @@ class _QuotasPageState extends State<QuotasPage> {
 
                             return TransactionTile(
                               tx: filtered[index],
-                              onLongPress: () => _confirmDelete(context, tx),
+                              onTap: () {
+                                _openQuotaDetails(context, filtered[index]);
+                              },
+                              onLongPress: () {
+                                _confirmDelete(filtered[index]);
+                              },
                             );
                           },
                         ),
@@ -149,37 +155,165 @@ class _QuotasPageState extends State<QuotasPage> {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, TxUi tx) async {
-    final ok = await showDialog<bool>(
+  void _openQuotaDetails(BuildContext context, TxUi tx) {
+    final theme = Theme.of(context);
+
+    showModalBottomSheet(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Apagar quota'),
-          content: Text(
-            'Queres apagar esta quota?\n\n'
-            '${tx.title}\n${tx.subtitle}\n${tx.total.toStringAsFixed(2)} €',
+      isScrollControlled: true,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            8,
+            16,
+            16 + MediaQuery.of(context).padding.bottom,
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Apagar'),
-            ),
-          ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      Icons.workspace_premium_outlined,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Detalhe da quota',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              _detailRow('Sócio', tx.title),
+              _detailRow('Períodos', tx.subtitle, multiline: true),
+              _detailRow('Data', _fmtDate(tx.date)),
+              _detailRow('Meses pagos', tx.quotaCount.toString()),
+
+              const SizedBox(height: 16),
+
+              Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        _fmtEuro(tx.total),
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
+  }
 
-    if (ok == true) {
-      context.read<QuotasCubit>().deleteQuota(txId: tx.id, yearToRefresh: year);
+  Widget _detailRow(String label, String value, {bool multiline = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(
+        crossAxisAlignment: multiline
+            ? CrossAxisAlignment.start
+            : CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 110,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              value,
+              maxLines: multiline ? null : 1,
+              overflow: multiline
+                  ? TextOverflow.visible
+                  : TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Quota apagada.')));
-    }
+  String _fmtDate(DateTime d) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${two(d.day)}/${two(d.month)}/${d.year}';
+  }
+
+  String _fmtEuro(double v) => '${v.toStringAsFixed(2)} €';
+
+  Future<void> _confirmDelete(TxUi tx) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Apagar quota'),
+        content: const Text('Tens a certeza que queres apagar esta quota?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Apagar'),
+          ),
+        ],
+      ),
+    );
+
+    if (ok != true) return;
+
+    await FirebaseFirestore.instance
+        .collection('transactions')
+        .doc(tx.id)
+        .delete();
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Quota apagada')));
+
+    // 🔥 Atualiza lista
+    context.read<QuotasCubit>().fetchQuotas(year: year);
   }
 }
 
