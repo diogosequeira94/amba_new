@@ -1,10 +1,12 @@
 import 'dart:ui';
 
 import 'package:amba_new/bottom_bar/bottom_bar_bloc.dart';
+import 'package:amba_new/cubit/finances/financial_cubit.dart';
 import 'package:amba_new/cubit/quota/add_quota_cubit.dart';
 import 'package:amba_new/cubit/users/users_cubit.dart';
 import 'package:amba_new/router/app_router.dart';
 import 'package:amba_new/view/add_quota_page.dart';
+import 'package:amba_new/view/finance_page.dart';
 import 'package:amba_new/view/home_page.dart';
 import 'package:amba_new/view/quotas_page.dart';
 import 'package:amba_new/view/settings_page.dart';
@@ -40,7 +42,15 @@ class _MainScreenState extends State<MainScreen> {
           extendBody: true,
           body: IndexedStack(
             index: index,
-            children: const [HomePage(), QuotasPage(), SettingsPage()],
+            children: [
+              const HomePage(),
+              const QuotasPage(),
+              BlocProvider(
+                create: (context) => FinanceCubit(),
+                child: const FinancePage(),
+              ),
+              const SettingsPage(),
+            ],
           ),
           floatingActionButton: state.selectedTab == SelectedTab.settings
               ? null
@@ -140,6 +150,12 @@ class _MainScreenState extends State<MainScreen> {
                           } else if (i == 2) {
                             bottomBarBloc.add(
                               const BottomBarChanged(
+                                selectedTab: SelectedTab.finances,
+                              ),
+                            );
+                          } else if (i == 3) {
+                            bottomBarBloc.add(
+                              const BottomBarChanged(
                                 selectedTab: SelectedTab.settings,
                               ),
                             );
@@ -154,6 +170,11 @@ class _MainScreenState extends State<MainScreen> {
                           GButton(
                             icon: Icons.payment_outlined,
                             text: 'Quotas',
+                            style: GnavStyle.google,
+                          ),
+                          GButton(
+                            icon: Icons.monetization_on_outlined,
+                            text: 'Finanças',
                             style: GnavStyle.google,
                           ),
                           GButton(
@@ -177,7 +198,8 @@ class _MainScreenState extends State<MainScreen> {
   int _tabIndex(SelectedTab selectedTab) {
     if (selectedTab == SelectedTab.home) return 0;
     if (selectedTab == SelectedTab.transactions) return 1;
-    if (selectedTab == SelectedTab.settings) return 2;
+    if (selectedTab == SelectedTab.finances) return 2;
+    if (selectedTab == SelectedTab.settings) return 3;
     return 0;
   }
 }
