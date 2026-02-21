@@ -1,4 +1,4 @@
-import 'package:amba_new/models/phone_message_member.dart';
+import 'package:amba_new/features/members/models/phone_message_member.dart';
 
 class PhoneNumbersUtils {
   static String getPhoneNumbersList(

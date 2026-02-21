@@ -1,20 +1,21 @@
-import 'package:amba_new/bloc/edit_bloc.dart';
-import 'package:amba_new/cubit/details/details_cubit.dart';
-import 'package:amba_new/cubit/messages/message_cubit.dart';
-import 'package:amba_new/cubit/users/users_cubit.dart';
-import 'package:amba_new/models/member.dart';
-import 'package:amba_new/models/phone_message_member.dart';
+import 'package:amba_new/features/members/bloc/edit_bloc.dart';
+import 'package:amba_new/features/members/cubit/message_cubit.dart';
+import 'package:amba_new/features/members/cubit/members_cubit.dart';
+import 'package:amba_new/features/members/models/phone_message_member.dart';
+import 'package:amba_new/features/members/view/member_details_page.dart';
+import 'package:amba_new/features/members/view/messages_page.dart';
+import 'package:amba_new/features/members/models/member.dart';
 import 'package:amba_new/view/amba_splash.dart';
-import 'package:amba_new/view/details_page.dart';
-import 'package:amba_new/view/form_page.dart';
+import 'package:amba_new/features/members/view/form_page.dart';
 import 'package:amba_new/view/main_screen.dart';
-import 'package:amba_new/view/messages_page.dart';
 import 'package:amba_new/view/pin_page.dart';
-import 'package:amba_new/view/settings_page.dart';
+import 'package:amba_new/features/settings/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-final UsersCubit _usersCubit = UsersCubit()..fetchPerson();
+import '../features/members/cubit/details_cubit.dart' show DetailsCubit;
+
+final MembersCubit _usersCubit = MembersCubit()..fetchPerson();
 final DetailsCubit _detailsCubit = DetailsCubit();
 
 class FormPageArguments {
@@ -32,13 +33,13 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const SplashScreen());
 
       case '/pin':
-        return MaterialPageRoute(builder: (_) =>  const PinLockPage());
+        return MaterialPageRoute(builder: (_) => const PinLockPage());
 
       case '/home':
         return MaterialPageRoute(
           builder: (_) => MultiBlocProvider(
             providers: [
-              BlocProvider<UsersCubit>.value(value: _usersCubit),
+              BlocProvider<MembersCubit>.value(value: _usersCubit),
               BlocProvider<DetailsCubit>.value(value: _detailsCubit),
             ],
             child: const MainScreen(),
@@ -49,10 +50,10 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => MultiBlocProvider(
             providers: [
-              BlocProvider<UsersCubit>.value(value: _usersCubit),
+              BlocProvider<MembersCubit>.value(value: _usersCubit),
               BlocProvider<DetailsCubit>.value(value: _detailsCubit),
             ],
-            child: const DetailsPage(),
+            child: const MemberDetailsPage(),
           ),
         );
 
@@ -60,7 +61,7 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => MultiBlocProvider(
             providers: [
-              BlocProvider<UsersCubit>.value(value: _usersCubit),
+              BlocProvider<MembersCubit>.value(value: _usersCubit),
               BlocProvider<DetailsCubit>.value(value: _detailsCubit),
               BlocProvider<EditBloc>(create: (context) => EditBloc()),
             ],
@@ -71,9 +72,7 @@ class AppRouter {
           ),
         );
       case '/settings':
-        return MaterialPageRoute(
-          builder: (_) => const SettingsPage(),
-        );
+        return MaterialPageRoute(builder: (_) => const SettingsPage());
 
       case '/message':
         final eligibleMembersList = _usersCubit.getAllMembers
@@ -93,7 +92,7 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => MultiBlocProvider(
             providers: [
-              BlocProvider<UsersCubit>.value(value: _usersCubit),
+              BlocProvider<MembersCubit>.value(value: _usersCubit),
               BlocProvider<MessageCubit>(
                 create: (context) =>
                     MessageCubit()..setupMembers(phoneNumberList),

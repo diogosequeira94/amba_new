@@ -1,22 +1,54 @@
 import 'package:amba_new/features/settings/services/pin_service.dart';
 import 'package:flutter/material.dart';
 
-class PinLockPage extends StatefulWidget {
-  const PinLockPage({super.key});
+class ChangePinPage extends StatefulWidget {
+  const ChangePinPage({super.key});
 
   @override
-  State<PinLockPage> createState() => _PinLockPageState();
+  State<ChangePinPage> createState() => _ChangePinPageState();
 }
 
-class _PinLockPageState extends State<PinLockPage> {
+class _ChangePinPageState extends State<ChangePinPage> {
   static const int _pinLength = 4;
 
   final _svc = PinService();
 
+  // steps
+  // 0 = pin atual, 1 = novo pin, 2 = confirmar
+  int _step = 0;
+
   final List<int> _digits = [];
-  int _attempts = 0;
+  String? _currentPin;
+  String? _newPin;
+
   bool _busy = false;
   String? _error;
+
+  String get _title {
+    switch (_step) {
+      case 0:
+        return 'PIN atual';
+      case 1:
+        return 'Novo PIN';
+      case 2:
+        return 'Confirmar PIN';
+      default:
+        return 'Alterar PIN';
+    }
+  }
+
+  String get _subtitle {
+    switch (_step) {
+      case 0:
+        return 'Introduz o PIN atual para continuar.';
+      case 1:
+        return 'Escolhe um novo PIN de 4 dígitos.';
+      case 2:
+        return 'Repete o novo PIN para confirmar.';
+      default:
+        return '';
+    }
+  }
 
   void _addDigit(int d) {
     if (_busy) return;
@@ -28,7 +60,7 @@ class _PinLockPageState extends State<PinLockPage> {
     });
 
     if (_digits.length == _pinLength) {
-      _verify();
+      _onComplete();
     }
   }
 
@@ -42,17 +74,13 @@ class _PinLockPageState extends State<PinLockPage> {
     });
   }
 
-  void _reset({String? error}) {
+  void _clearDigits() {
     setState(() {
-      _busy = false;
       _digits.clear();
-      _error = error;
     });
   }
 
-  Future<void> _verify() async {
-    if (_busy) return;
-
+  Future<void> _onComplete() async {
     final pin = _digits.join();
 
     setState(() {
@@ -60,28 +88,64 @@ class _PinLockPageState extends State<PinLockPage> {
       _error = null;
     });
 
-    final ok = await _svc.verify(pin);
+    try {
+      if (_step == 0) {
+        final ok = await _svc.verify(pin);
+        if (!mounted) return;
 
-    if (!mounted) return;
+        if (!ok) {
+          setState(() {
+            _busy = false;
+            _error = 'PIN atual incorreto';
+          });
+          _clearDigits();
+          return;
+        }
 
-    if (ok) {
-      Navigator.pushReplacementNamed(context, '/home');
-      return;
-    }
+        _currentPin = pin;
+        setState(() {
+          _busy = false;
+          _step = 1;
+        });
+        _clearDigits();
+        return;
+      }
 
-    _attempts++;
+      if (_step == 1) {
+        _newPin = pin;
+        setState(() {
+          _busy = false;
+          _step = 2;
+        });
+        _clearDigits();
+        return;
+      }
 
-    // Feedback + reset
-    _reset(error: 'PIN incorreto (${_attempts}/5)');
+      if (_step == 2) {
+        if (_newPin != pin) {
+          setState(() {
+            _busy = false;
+            _error = 'Os PINs não coincidem';
+            _step = 1; // volta a escolher novo PIN
+          });
+          _clearDigits();
+          return;
+        }
 
-    if (_attempts >= 5) {
-      // bloqueio simples (opcional)
-      await Future.delayed(const Duration(seconds: 10));
+        // grava
+        await _svc.setPin(pin);
+
+        if (!mounted) return;
+        Navigator.of(context).pop(true);
+        return;
+      }
+    } catch (e) {
       if (!mounted) return;
       setState(() {
-        _attempts = 0;
-        _error = 'Tenta novamente';
+        _busy = false;
+        _error = 'Erro ao atualizar PIN';
       });
+      _clearDigits();
     }
   }
 
@@ -90,69 +154,63 @@ class _PinLockPageState extends State<PinLockPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Acesso à app',
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w900,
+      appBar: AppBar(title: const Text('Alterar PIN')),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+        child: Column(
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _title,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(_subtitle, style: theme.textTheme.bodyMedium),
+                ],
+              ),
+            ),
+
+            const Spacer(),
+
+            _PinDots(
+              filled: _digits.length,
+              total: _pinLength,
+              isError: _error != null,
+              isBusy: _busy,
+            ),
+
+            const SizedBox(height: 14),
+
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: _error == null
+                  ? const SizedBox(height: 22)
+                  : Text(
+                      _error!,
+                      key: ValueKey(_error),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.error,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Introduz o teu PIN para continuar.',
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
+            ),
 
-              const Spacer(),
+            const Spacer(),
 
-              // 4 círculos
-              _PinDots(
-                filled: _digits.length,
-                total: _pinLength,
-                isError: _error != null,
-                isBusy: _busy,
-              ),
+            _PinKeyboard(
+              enabled: !_busy,
+              onDigit: _addDigit,
+              onBackspace: _backspace,
+            ),
 
-              const SizedBox(height: 14),
-
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 180),
-                child: _error == null
-                    ? const SizedBox(height: 22)
-                    : Text(
-                        _error!,
-                        key: ValueKey(_error),
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.error,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-              ),
-
-              const Spacer(),
-
-              // Teclado numérico
-              _PinKeyboard(
-                enabled: !_busy,
-                onDigit: _addDigit,
-                onBackspace: _backspace,
-              ),
-
-              const SizedBox(height: 10),
-            ],
-          ),
+            const SizedBox(height: 10),
+          ],
         ),
       ),
     );
@@ -241,8 +299,6 @@ class _PinKeyboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     Widget key(String label, {VoidCallback? onTap}) {
       return _KeyButton(
         label: label,
@@ -286,7 +342,7 @@ class _PinKeyboard extends StatelessWidget {
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(
+            const Expanded(
               child: _KeyButton(label: ' ', enabled: false, onTap: null),
             ),
             const SizedBox(width: 10),
@@ -300,14 +356,6 @@ class _PinKeyboard extends StatelessWidget {
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'PIN de 4 dígitos',
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.55),
-            fontWeight: FontWeight.w700,
-          ),
         ),
       ],
     );
@@ -344,7 +392,6 @@ class _KeyButton extends StatelessWidget {
               label,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w900,
-                color: theme.colorScheme.onSurface,
               ),
             ),
           ),
@@ -379,9 +426,7 @@ class _IconKeyButton extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
           onTap: enabled ? onTap : null,
-          child: Center(
-            child: Icon(icon, size: 22, color: theme.colorScheme.onSurface),
-          ),
+          child: Center(child: Icon(icon, size: 22)),
         ),
       ),
     );

@@ -1,11 +1,11 @@
-import 'package:amba_new/bottom_bar/bottom_bar_bloc.dart';
-import 'package:amba_new/cubit/quota/quotas_cubit.dart';
-import 'package:amba_new/cubit/users/users_cubit.dart';
+import 'package:amba_new/features/bottom_bar/bottom_bar_bloc.dart';
 import 'package:amba_new/firebase_options.dart';
 import 'package:amba_new/router/app_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'features/quotas/cubit/quotas_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

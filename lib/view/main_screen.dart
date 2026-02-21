@@ -1,15 +1,15 @@
 import 'dart:ui';
 
-import 'package:amba_new/bottom_bar/bottom_bar_bloc.dart';
-import 'package:amba_new/cubit/finances/financial_cubit.dart';
-import 'package:amba_new/cubit/quota/add_quota_cubit.dart';
-import 'package:amba_new/cubit/users/users_cubit.dart';
+import 'package:amba_new/features/bottom_bar/bottom_bar_bloc.dart';
+import 'package:amba_new/features/members/cubit/members_cubit.dart';
+import 'package:amba_new/features/members/view/members_page.dart';
+import 'package:amba_new/features/quotas/cubit/add_quota_cubit.dart';
+import 'package:amba_new/features/finances/cubit/financial_cubit.dart';
 import 'package:amba_new/router/app_router.dart';
-import 'package:amba_new/view/add_quota_page.dart';
-import 'package:amba_new/view/finance_page.dart';
-import 'package:amba_new/view/home_page.dart';
-import 'package:amba_new/view/quotas_page.dart';
-import 'package:amba_new/view/settings_page.dart';
+import 'package:amba_new/features/quotas/view/add_quota_page.dart';
+import 'package:amba_new/features/finances/view/finance_page.dart';
+import 'package:amba_new/features/quotas/view/quotas_page.dart';
+import 'package:amba_new/features/settings/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -43,7 +43,7 @@ class _MainScreenState extends State<MainScreen> {
           body: IndexedStack(
             index: index,
             children: [
-              const HomePage(),
+              const MembersPage(),
               const QuotasPage(),
               BlocProvider(
                 create: (context) => FinanceCubit(),
@@ -52,7 +52,9 @@ class _MainScreenState extends State<MainScreen> {
               const SettingsPage(),
             ],
           ),
-          floatingActionButton: state.selectedTab == SelectedTab.settings
+          floatingActionButton:
+              state.selectedTab == SelectedTab.settings ||
+                  state.selectedTab == SelectedTab.finances
               ? null
               : FloatingActionButton(
                   onPressed: () {
@@ -69,8 +71,8 @@ class _MainScreenState extends State<MainScreen> {
                             MaterialPageRoute(
                               builder: (_) => MultiBlocProvider(
                                 providers: [
-                                  BlocProvider<UsersCubit>.value(
-                                    value: context.read<UsersCubit>(),
+                                  BlocProvider<MembersCubit>.value(
+                                    value: context.read<MembersCubit>(),
                                   ),
                                   BlocProvider(create: (_) => AddQuotaCubit()),
                                 ],

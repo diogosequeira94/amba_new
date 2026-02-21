@@ -1,4 +1,4 @@
-import 'package:amba_new/services/pin_service.dart';
+import 'package:amba_new/features/settings/services/pin_service.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
