@@ -43,9 +43,9 @@ class FiltersCard extends StatelessWidget {
                 ChipMenu<int>(
                   icon: Icons.calendar_today_outlined,
                   label: '$year',
-                  items: List.generate(7, (i) {
+                  items: List.generate(3, (i) {
                     final base = DateTime.now().year;
-                    return base - 5 + i;
+                    return base - 2 + i;
                   }),
                   itemLabel: (v) => v.toString(),
                   onSelected: onYearChanged,

@@ -17,7 +17,7 @@ class _AddQuotaPageState extends State<AddQuotaPage> {
   Member? selectedMember;
   int selectedYear = DateTime.now().year;
 
-  final TextEditingController amountCtrl = TextEditingController(text: '10.00');
+  final TextEditingController amountCtrl = TextEditingController(text: '1.00');
 
   final List<String> months = const [
     'Jan',
@@ -151,8 +151,8 @@ class _AddQuotaPageState extends State<AddQuotaPage> {
                           prefixIcon: Icon(Icons.calendar_today_outlined),
                           labelText: 'Selecionar ano',
                         ),
-                        items: List.generate(7, (index) {
-                          final year = DateTime.now().year - 5 + index;
+                        items: List.generate(4, (index) {
+                          final year = DateTime.now().year - 2 + index;
                           return DropdownMenuItem(
                             value: year,
                             child: Text(year.toString()),

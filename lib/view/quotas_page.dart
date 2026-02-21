@@ -1,12 +1,12 @@
 import 'package:amba_new/cubit/quota/quotas_cubit.dart';
 import 'package:amba_new/cubit/quota/quotas_state.dart';
+import 'package:amba_new/view/widgets/transactions/quota_tile.dart';
 import 'package:amba_new/view/widgets/transactions/tx_ui.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:amba_new/view/widgets/transactions/filters_card.dart';
 import 'package:amba_new/view/widgets/transactions/summary_row.dart';
-import 'package:amba_new/view/widgets/transactions/transaction_tile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class QuotasPage extends StatefulWidget {

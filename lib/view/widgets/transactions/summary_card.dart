@@ -44,10 +44,4 @@ class SummaryCard extends StatelessWidget {
       ),
     );
   }
-
-  String _fmtEuro(double v) {
-    final sign = v < 0 ? '-' : '';
-    final abs = v.abs();
-    return '$sign${abs.toStringAsFixed(2)} €';
-  }
 }

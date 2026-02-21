@@ -47,7 +47,7 @@ class TransactionTile extends StatelessWidget {
         ),
 
         subtitle: Text(
-          '${tx.subtitle} • ${_fmtDate(tx.date)}'
+          '${tx.subtitle}'
           '${tx.quotaCount > 1 ? ' • ${tx.quotaCount} meses' : ''}',
         ),
 

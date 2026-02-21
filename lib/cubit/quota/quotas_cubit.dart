@@ -33,11 +33,14 @@ class QuotasCubit extends Cubit<QuotasState> {
 
         return TxUi(
           id: d.id, // ✅ aqui
-          title: 'Quota — $name',
-          subtitle: periods.join(', '),
+          title: name,
+          subtitle: buildSubtitle(periods, year),
           date: createdAt,
           total: total,
-          quotaCount: periods.length,
+          quotaCount: periods
+              .where((p) => p.trim().startsWith('$year-'))
+              .toSet()
+              .length,
         );
       }).toList();
 
@@ -64,5 +67,33 @@ class QuotasCubit extends Cubit<QuotasState> {
     } catch (e) {
       emit(QuotasFailure(e.toString()));
     }
+  }
+
+  String buildSubtitle(List<String> periods, int year) {
+    // Normaliza e filtra só os períodos do ano pedido (ex: "2026-02")
+    final yearPrefix = '$year-';
+
+    final filtered = periods
+        .map((e) => e.trim())
+        .where((e) => e.startsWith(yearPrefix))
+        .toSet(); // remove duplicados
+
+    // Gera a lista esperada para o ano completo
+    final expected = List.generate(
+      12,
+      (i) => '$year-${(i + 1).toString().padLeft(2, '0')}',
+    );
+
+    final hasFullYear = expected.every(filtered.contains);
+
+    if (hasFullYear) return 'Todo o ano $year';
+
+    // Se não for completo, podemos mostrar só os meses desse ano, ordenados
+    final sorted = filtered.toList()..sort();
+
+    // fallback: se não houver nenhum período desse ano, mostra o original (ou vazio)
+    if (sorted.isEmpty) return periods.join(', ');
+
+    return sorted.join(', ');
   }
 }

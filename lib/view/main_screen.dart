@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:amba_new/bottom_bar/bottom_bar_bloc.dart';
 import 'package:amba_new/cubit/quota/add_quota_cubit.dart';
 import 'package:amba_new/router/app_router.dart';
@@ -62,53 +64,92 @@ class _MainScreenState extends State<MainScreen> {
             },
             child: const Icon(Icons.add),
           ),
-
-          bottomNavigationBar: Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              boxShadow: [
-                BoxShadow(
-                  blurRadius: 22,
-                  offset: const Offset(0, 10),
-                  color: Colors.black.withOpacity(0.08),
-                ),
-              ],
-              border: Border.all(color: theme.dividerColor.withOpacity(0.35)),
-            ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          bottomNavigationBar: SafeArea(
+            top: false,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: GNav(
-                mainAxisAlignment: MainAxisAlignment.center,
-                gap: 10.0,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18.0,
-                  vertical: 14.0,
-                ),
-                tabBorderRadius: 18,
-                backgroundColor: theme.colorScheme.surface,
-                color: theme.colorScheme.onSurface.withOpacity(0.60),
-                activeColor: theme.colorScheme.primary,
-                tabBackgroundColor: theme.colorScheme.primary.withOpacity(0.12),
-                rippleColor: theme.colorScheme.primary.withOpacity(0.12),
-                hoverColor: theme.colorScheme.primary.withOpacity(0.08),
-                selectedIndex: index,
-                onTabChange: (i) {
-                  if (i == 0) {
-                    bottomBarBloc.add(
-                      const BottomBarChanged(selectedTab: SelectedTab.home),
-                    );
-                  } else if (i == 1) {
-                    bottomBarBloc.add(
-                      const BottomBarChanged(
-                        selectedTab: SelectedTab.transactions,
+              // ✅ margem lateral + "floating" look
+              padding: EdgeInsets.fromLTRB(
+                14,
+                0,
+                14,
+                MediaQuery.of(context).viewPadding.bottom, // ✅ robusto
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(22),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      // ✅ translúcido e moderno
+                      color: theme.colorScheme.surface.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: theme.dividerColor.withOpacity(0.22),
                       ),
-                    );
-                  }
-                },
-                tabs: const [
-                  GButton(icon: Icons.home_rounded, text: 'Home'),
-                  GButton(icon: Icons.payment_outlined, text: 'Quotas'),
-                ],
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 26,
+                          offset: const Offset(0, 14),
+                          color: Colors.black.withOpacity(0.10),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 10,
+                      ),
+                      child: GNav(
+                        style: GnavStyle.google,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        gap: 10,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 14,
+                        ),
+                        tabBorderRadius: 18,
+                        backgroundColor: Colors.transparent, // ✅ importante
+                        color: theme.colorScheme.onSurface.withOpacity(0.60),
+                        activeColor: theme.colorScheme.primary,
+                        tabBackgroundColor: theme.colorScheme.primary
+                            .withOpacity(0.12),
+                        rippleColor: theme.colorScheme.primary.withOpacity(
+                          0.12,
+                        ),
+                        hoverColor: theme.colorScheme.primary.withOpacity(0.08),
+                        selectedIndex: index,
+                        onTabChange: (i) {
+                          if (i == 0) {
+                            bottomBarBloc.add(
+                              const BottomBarChanged(
+                                selectedTab: SelectedTab.home,
+                              ),
+                            );
+                          } else if (i == 1) {
+                            bottomBarBloc.add(
+                              const BottomBarChanged(
+                                selectedTab: SelectedTab.transactions,
+                              ),
+                            );
+                          }
+                        },
+                        tabs: const [
+                          GButton(
+                            icon: Icons.home_rounded,
+                            text: 'Home',
+                            style: GnavStyle.google,
+                          ),
+                          GButton(
+                            icon: Icons.payment_outlined,
+                            text: 'Quotas',
+                            style: GnavStyle.google,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
