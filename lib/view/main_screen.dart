@@ -42,31 +42,35 @@ class _MainScreenState extends State<MainScreen> {
             index: index,
             children: const [HomePage(), QuotasPage(), SettingsPage()],
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              state.selectedTab == SelectedTab.home
-                  ? Navigator.pushNamed(
-                      context,
-                      '/create',
-                      arguments: const FormPageArguments(isEditing: false),
-                    )
-                  : Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MultiBlocProvider(
-                          providers: [
-                            BlocProvider<UsersCubit>.value(
-                              value: context.read<UsersCubit>(),
+          floatingActionButton: state.selectedTab == SelectedTab.settings
+              ? null
+              : FloatingActionButton(
+                  onPressed: () {
+                    state.selectedTab == SelectedTab.home
+                        ? Navigator.pushNamed(
+                            context,
+                            '/create',
+                            arguments: const FormPageArguments(
+                              isEditing: false,
                             ),
-                            BlocProvider(create: (_) => AddQuotaCubit()),
-                          ],
-                          child: const AddQuotaPage(),
-                        ),
-                      ),
-                    );
-            },
-            child: const Icon(Icons.add),
-          ),
+                          )
+                        : Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MultiBlocProvider(
+                                providers: [
+                                  BlocProvider<UsersCubit>.value(
+                                    value: context.read<UsersCubit>(),
+                                  ),
+                                  BlocProvider(create: (_) => AddQuotaCubit()),
+                                ],
+                                child: const AddQuotaPage(),
+                              ),
+                            ),
+                          );
+                  },
+                  child: const Icon(Icons.add),
+                ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           bottomNavigationBar: SafeArea(
             top: false,
