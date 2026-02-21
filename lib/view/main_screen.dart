@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:amba_new/bottom_bar/bottom_bar_bloc.dart';
 import 'package:amba_new/cubit/quota/add_quota_cubit.dart';
+import 'package:amba_new/cubit/users/users_cubit.dart';
 import 'package:amba_new/router/app_router.dart';
 import 'package:amba_new/view/add_quota_page.dart';
 import 'package:amba_new/view/home_page.dart';
@@ -52,8 +53,13 @@ class _MainScreenState extends State<MainScreen> {
                   : Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => BlocProvider(
-                          create: (_) => AddQuotaCubit(),
+                        builder: (_) => MultiBlocProvider(
+                          providers: [
+                            BlocProvider<UsersCubit>.value(
+                              value: context.read<UsersCubit>(),
+                            ),
+                            BlocProvider(create: (_) => AddQuotaCubit()),
+                          ],
                           child: const AddQuotaPage(),
                         ),
                       ),

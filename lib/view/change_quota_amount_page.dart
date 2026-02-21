@@ -58,8 +58,6 @@ class _ChangeQuotaAmountPageState extends State<ChangeQuotaAmountPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(title: const Text('Valor por defeito')),
       body: _loading
@@ -92,13 +90,16 @@ class _ChangeQuotaAmountPageState extends State<ChangeQuotaAmountPage> {
                     ),
                   ),
                   const Spacer(),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.save_outlined),
-                      label: const Text('Guardar'),
-                      onPressed: _save,
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.save_outlined),
+                        label: const Text('Guardar'),
+                        onPressed: _save,
+                      ),
                     ),
                   ),
                 ],
