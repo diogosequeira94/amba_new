@@ -27,7 +27,6 @@ class MyApp extends StatelessWidget {
             return QuotasCubit()..fetchQuotas(year: currentYear);
           },
         ),
-        BlocProvider(create: (context) => UsersCubit()..fetchPerson()),
         BlocProvider(create: (context) => BottomBarBloc()),
       ],
       child: MaterialApp(
@@ -35,6 +34,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(primarySwatch: Colors.blue),
         debugShowCheckedModeBanner: false,
         onGenerateRoute: appRouter.onGenerateRoute,
+        initialRoute: '/',
       ),
     );
   }

@@ -6,46 +6,56 @@ import 'quotas_state.dart';
 class QuotasCubit extends Cubit<QuotasState> {
   QuotasCubit() : super(QuotasInitial());
 
-  Future<void> fetchQuotas({required int year}) async {
+  Future<void> fetchQuotas({required int year, int month = 0}) async {
     emit(QuotasLoading());
 
     try {
-      final snap = await FirebaseFirestore.instance
+      Query<Map<String, dynamic>> q = FirebaseFirestore.instance
           .collection('transactions')
           .where('type', isEqualTo: 'membership_fee')
-          .where('year', isEqualTo: year)
-          .get();
+          .where('year', isEqualTo: year);
+
+      if (month != 0) {
+        final periodKey = '$year-${month.toString().padLeft(2, '0')}';
+        q = q.where('periods', arrayContains: periodKey);
+      }
+
+      final snap = await q.get();
 
       final list = snap.docs.map((d) {
         final data = d.data();
 
         final name = (data['memberName'] ?? '').toString().trim();
         final periods = (data['periods'] as List<dynamic>? ?? [])
-            .map((e) => e.toString())
+            .map((e) => e.toString().trim())
             .toList();
 
         final total = (data['total'] as num? ?? 0).toDouble();
 
         final ts = data['createdAt'];
-        final DateTime createdAt = (ts is Timestamp)
+        final createdAt = (ts is Timestamp)
             ? ts.toDate()
             : DateTime(year, 1, 1);
 
+        final normalizedPeriods = (data['periods'] as List<dynamic>? ?? [])
+            .map((e) => e.toString().trim())
+            .toList();
+
         return TxUi(
-          id: d.id, // ✅ aqui
+          id: d.id,
           title: name,
-          subtitle: buildSubtitle(periods, year),
+          subtitle: buildSubtitle(normalizedPeriods, year),
           date: createdAt,
           total: total,
-          quotaCount: periods
-              .where((p) => p.trim().startsWith('$year-'))
+          quotaCount: normalizedPeriods
+              .where((p) => p.startsWith('$year-'))
               .toSet()
               .length,
+          periodKeys: normalizedPeriods, // ✅
         );
       }).toList();
 
       list.sort((a, b) => b.date.compareTo(a.date));
-
       emit(QuotasSuccess(list));
     } catch (e) {
       emit(QuotasFailure(e.toString()));

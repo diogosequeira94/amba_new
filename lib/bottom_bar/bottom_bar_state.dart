@@ -1,6 +1,6 @@
 part of 'bottom_bar_bloc.dart';
 
-enum SelectedTab {home, transactions}
+enum SelectedTab {home, transactions, settings}
 class BottomBarState extends Equatable {
   final SelectedTab selectedTab;
   const BottomBarState({this.selectedTab = SelectedTab.home});

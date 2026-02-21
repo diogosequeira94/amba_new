@@ -43,7 +43,7 @@ class FiltersCard extends StatelessWidget {
                 ChipMenu<int>(
                   icon: Icons.calendar_today_outlined,
                   label: '$year',
-                  items: List.generate(3, (i) {
+                  items: List.generate(4, (i) {
                     final base = DateTime.now().year;
                     return base - 2 + i;
                   }),
@@ -68,8 +68,18 @@ class FiltersCard extends StatelessWidget {
 
   static String _monthName(int m) {
     const months = [
-      'Jan','Fev','Mar','Abr','Mai','Jun',
-      'Jul','Ago','Set','Out','Nov','Dez',
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
     ];
     return months[m - 1];
   }

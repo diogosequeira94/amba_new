@@ -30,7 +30,7 @@ class HomePage extends StatelessWidget {
                   title: const Text('Sócios da AMBA'),
                   actions: [
                     IconButton(
-                      icon: const Icon(Icons.message_rounded),
+                      icon: const Icon(Icons.message_outlined),
                       onPressed: () {
                         Navigator.pushNamed(context, '/message');
                       },

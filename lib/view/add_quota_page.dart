@@ -3,6 +3,7 @@ import 'package:amba_new/cubit/quota/add_quota_state.dart';
 import 'package:amba_new/cubit/quota/quotas_cubit.dart';
 import 'package:amba_new/cubit/users/users_cubit.dart';
 import 'package:amba_new/models/member.dart';
+import 'package:amba_new/services/quota_settings_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -17,7 +18,8 @@ class _AddQuotaPageState extends State<AddQuotaPage> {
   Member? selectedMember;
   int selectedYear = DateTime.now().year;
 
-  final TextEditingController amountCtrl = TextEditingController(text: '1.00');
+  final TextEditingController amountCtrl = TextEditingController();
+  final _quotaSettings = QuotaSettingsService();
 
   final List<String> months = const [
     'Jan',
@@ -35,6 +37,20 @@ class _AddQuotaPageState extends State<AddQuotaPage> {
   ];
 
   final Set<int> selectedMonths = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDefaultAmount();
+  }
+
+  Future<void> _loadDefaultAmount() async {
+    final v = await _quotaSettings.getDefaultAmount();
+    if (!mounted) return;
+    setState(() {
+      amountCtrl.text = v.toStringAsFixed(2);
+    });
+  }
 
   @override
   void dispose() {
@@ -61,7 +77,7 @@ class _AddQuotaPageState extends State<AddQuotaPage> {
 
         if (state is AddQuotaSuccess) {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          context.read<QuotasCubit>().fetchQuotas(year: 2026);
+          context.read<QuotasCubit>().fetchQuotas(year: selectedYear);
           Navigator.pop(context);
         }
 

@@ -24,7 +24,7 @@ class _QuotasPageState extends State<QuotasPage> {
   void initState() {
     super.initState();
     // carrega logo o ano atual
-    context.read<QuotasCubit>().fetchQuotas(year: year);
+    context.read<QuotasCubit>().fetchQuotas(year: year, month: month);
   }
 
   @override
@@ -34,7 +34,7 @@ class _QuotasPageState extends State<QuotasPage> {
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () async {
-          context.read<QuotasCubit>().fetchQuotas(year: year);
+          context.read<QuotasCubit>().fetchQuotas(year: year, month: month);
           return;
         },
         child: BlocBuilder<QuotasCubit, QuotasState>(
@@ -51,13 +51,9 @@ class _QuotasPageState extends State<QuotasPage> {
                 ? state.items
                 : const [];
 
-            final filtered = all.where((t) {
-              final sameYear = t.date.year == year;
-              final sameMonth = month == 0 ? true : t.date.month == month;
-              return sameYear && sameMonth;
-            }).toList();
+            final filtered = all;
 
-            final totals = _computeTotals(filtered);
+            final totals = _computeTotals(filtered, year: year, month: month);
 
             return CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -91,9 +87,18 @@ class _QuotasPageState extends State<QuotasPage> {
                           month: month,
                           onYearChanged: (v) {
                             setState(() => year = v);
-                            context.read<QuotasCubit>().fetchQuotas(year: v);
+                            context.read<QuotasCubit>().fetchQuotas(
+                              year: v,
+                              month: month,
+                            );
                           },
-                          onMonthChanged: (v) => setState(() => month = v),
+                          onMonthChanged: (v) {
+                            setState(() => month = v);
+                            context.read<QuotasCubit>().fetchQuotas(
+                              year: year,
+                              month: v,
+                            );
+                          },
                         ),
                         const SizedBox(height: 12),
                         SummaryRow(
@@ -324,13 +329,40 @@ class _Totals {
   _Totals(this.totalAmount, this.quotaCount);
 }
 
-_Totals _computeTotals(List<TxUi> list) {
+_Totals _computeTotals(
+  List<TxUi> list, {
+  required int year,
+  required int month,
+}) {
   double totalAmount = 0;
   int quotaCount = 0;
 
+  final periodKey = month == 0
+      ? null
+      : '$year-${month.toString().padLeft(2, '0')}';
+
   for (final t in list) {
-    totalAmount += t.total;
-    quotaCount += t.quotaCount;
+    final yearPeriods = t.periodKeys
+        .map((p) => p.trim())
+        .where((p) => p.startsWith('$year-'))
+        .toSet();
+
+    if (month == 0) {
+      // Ano inteiro: soma tudo como já fazias
+      totalAmount += t.total;
+      quotaCount += yearPeriods.length;
+      continue;
+    }
+
+    // Mês específico: só conta se incluir o período
+    if (!yearPeriods.contains(periodKey)) continue;
+
+    // Valor "atribuído" ao mês (aproximação)
+    final monthsInThisTx = yearPeriods.length;
+    final perMonth = monthsInThisTx == 0 ? 0.0 : (t.total / monthsInThisTx);
+
+    totalAmount += perMonth;
+    quotaCount += 1; // este tx cobre este mês (1 mês pago)
   }
 
   return _Totals(totalAmount, quotaCount);

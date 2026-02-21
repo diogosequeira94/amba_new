@@ -6,6 +6,7 @@ import 'package:amba_new/router/app_router.dart';
 import 'package:amba_new/view/add_quota_page.dart';
 import 'package:amba_new/view/home_page.dart';
 import 'package:amba_new/view/quotas_page.dart';
+import 'package:amba_new/view/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -35,14 +36,10 @@ class _MainScreenState extends State<MainScreen> {
         final index = _tabIndex(state.selectedTab);
 
         return Scaffold(
-          // ✅ Importante para barra flutuante (body pode “passar” por trás)
           extendBody: true,
-
-          // ✅ Nada de AppBar aqui (cada tab já é Scaffold)
-          // ✅ Nada de FAB aqui (HomePage já tem FAB)
           body: IndexedStack(
             index: index,
-            children: const [HomePage(), QuotasPage()],
+            children: const [HomePage(), QuotasPage(), SettingsPage()],
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
@@ -68,12 +65,11 @@ class _MainScreenState extends State<MainScreen> {
           bottomNavigationBar: SafeArea(
             top: false,
             child: Padding(
-              // ✅ margem lateral + "floating" look
               padding: EdgeInsets.fromLTRB(
                 14,
                 0,
                 14,
-                MediaQuery.of(context).viewPadding.bottom, // ✅ robusto
+                MediaQuery.of(context).viewPadding.bottom,
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(22),
@@ -81,7 +77,6 @@ class _MainScreenState extends State<MainScreen> {
                   filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      // ✅ translúcido e moderno
                       color: theme.colorScheme.surface.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(
@@ -132,6 +127,12 @@ class _MainScreenState extends State<MainScreen> {
                                 selectedTab: SelectedTab.transactions,
                               ),
                             );
+                          } else if (i == 2) {
+                            bottomBarBloc.add(
+                              const BottomBarChanged(
+                                selectedTab: SelectedTab.settings,
+                              ),
+                            );
                           }
                         },
                         tabs: const [
@@ -143,6 +144,11 @@ class _MainScreenState extends State<MainScreen> {
                           GButton(
                             icon: Icons.payment_outlined,
                             text: 'Quotas',
+                            style: GnavStyle.google,
+                          ),
+                          GButton(
+                            icon: Icons.settings_outlined,
+                            text: 'Definições',
                             style: GnavStyle.google,
                           ),
                         ],
@@ -161,6 +167,7 @@ class _MainScreenState extends State<MainScreen> {
   int _tabIndex(SelectedTab selectedTab) {
     if (selectedTab == SelectedTab.home) return 0;
     if (selectedTab == SelectedTab.transactions) return 1;
+    if (selectedTab == SelectedTab.settings) return 2;
     return 0;
   }
 }

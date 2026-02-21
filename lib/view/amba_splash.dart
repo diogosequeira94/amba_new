@@ -1,3 +1,4 @@
+import 'package:amba_new/services/pin_service.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -29,9 +30,30 @@ class _SplashScreenState extends State<SplashScreen>
 
     _c.forward();
 
-    Future.delayed(const Duration(milliseconds: 2500), () {
+    Future.delayed(const Duration(milliseconds: 2000), () async {
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
+
+      try {
+        final pin = PinService();
+
+        // garante PIN default em fresh install
+        await pin.ensureDefaultPin(defaultPin: '1958');
+
+        final enabled = await pin.isEnabled();
+
+        if (!mounted) return;
+
+        Navigator.of(context).pushReplacementNamed(enabled ? '/pin' : '/home');
+      } catch (e, st) {
+        // 🔥 IMPORTANTÍSSIMO: senão ficas preso na splash sem saber porquê
+        debugPrint('Splash PIN init error: $e');
+        debugPrint('$st');
+
+        if (!mounted) return;
+
+        // fallback: entra na app
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
     });
   }
 
@@ -68,7 +90,6 @@ class _SplashScreenState extends State<SplashScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Logo em card
                       Container(
                         padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
@@ -92,9 +113,7 @@ class _SplashScreenState extends State<SplashScreen>
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 22),
-
                       Text(
                         'AMBA',
                         style: theme.textTheme.displaySmall?.copyWith(
@@ -102,10 +121,7 @@ class _SplashScreenState extends State<SplashScreen>
                           letterSpacing: 0.6,
                         ),
                       ),
-
                       const SizedBox(height: 10),
-
-                      // subtítulo/role
                       Text(
                         'Hipólito Sequeira',
                         textAlign: TextAlign.center,
@@ -114,8 +130,6 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ),
                       const SizedBox(height: 30),
-
-                      // indicador discreto
                       SizedBox(
                         width: 22,
                         height: 22,
