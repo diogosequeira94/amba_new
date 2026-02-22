@@ -31,9 +31,23 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  build_runner: 2.1.11
-  json_serializable: 6.2.0
   flutter_lints: ^2.0.0
+  json_serializable: ^6.9.0
+  build_runner: ^2.4.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/icon/icon.jpg
+
+  # Android adaptive icon (Android 8+)
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/icon/icon.jpg
+
+  # Android 13 themed icon (opcional, mas ajuda no “fica bonito”)
+  android_13:
+    monochrome_icon: assets/icon/icon.jpg
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -44,5 +58,6 @@ flutter:
 
   assets:
     - assets/
+    - assets/icon/icon.jpg
     - assets/fonts/Roboto-Regular.ttf
     - assets/fonts/Roboto-Bold.ttf

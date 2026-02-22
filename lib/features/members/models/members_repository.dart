@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'socio_repo.g.dart';
+part 'members_repository.g.dart';
 
 @JsonSerializable()
 class MemberRepository extends Equatable {
@@ -44,5 +44,5 @@ class MemberRepository extends Equatable {
     isActive,
   ];
 
-  factory MemberRepository.fromJson(Map<String, dynamic> json) => _$SocioRepoFromJson(json);
+  factory MemberRepository.fromJson(Map<String, dynamic> json) => _$MemberRepositoryFromJson(json);
 }

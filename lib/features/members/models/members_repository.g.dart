@@ -1,12 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'socio_repo.dart';
+part of 'members_repository.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-MemberRepository _$SocioRepoFromJson(Map<String, dynamic> json) => MemberRepository(
+MemberRepository _$MemberRepositoryFromJson(Map<String, dynamic> json) =>
+    MemberRepository(
       name: json['name'] as String,
       memberNumber: json['memberNumber'] as String,
       joiningDate: json['joiningDate'] as String,
@@ -17,7 +18,8 @@ MemberRepository _$SocioRepoFromJson(Map<String, dynamic> json) => MemberReposit
       notes: json['notes'] as String,
     );
 
-Map<String, dynamic> _$SocioRepoToJson(MemberRepository instance) => <String, dynamic>{
+Map<String, dynamic> _$MemberRepositoryToJson(MemberRepository instance) =>
+    <String, dynamic>{
       'name': instance.name,
       'memberNumber': instance.memberNumber,
       'joiningDate': instance.joiningDate,

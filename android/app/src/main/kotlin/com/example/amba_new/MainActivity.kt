@@ -1,4 +1,4 @@
-package com.example.amba_new
+package com.amba.gestor
 
 import io.flutter.embedding.android.FlutterActivity
 
