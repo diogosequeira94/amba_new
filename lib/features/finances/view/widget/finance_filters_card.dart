@@ -1,3 +1,4 @@
+import 'package:amba_new/features/finances/model/finance_categories.dart';
 import 'package:amba_new/features/quotas/view/widgets/chip_menu.dart';
 import 'package:flutter/material.dart';
 
@@ -29,15 +30,15 @@ class FinanceFiltersCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    const categories = [
-      'all',
-      'Eventos',
-      'Renda',
-      'Água',
-      'Material',
-      'Donativos',
-      'Outros',
-    ];
+    // Categorias dependentes do tipo selecionado
+    final categoryItems = switch (type) {
+      'income' => ['all', ...FinanceCategories.income],
+      'expense' => ['all', ...FinanceCategories.expense],
+      _ => ['all', ...FinanceCategories.all],
+    };
+
+    // Se a categoria atual não existir (ex: mudaste o tipo), cai para 'all'
+    final safeCategory = categoryItems.contains(category) ? category : 'all';
 
     return Card(
       elevation: 0,
@@ -57,8 +58,6 @@ class FinanceFiltersCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // Reusa exatamente o teu FiltersCard "base" (ano/mês),
-            // mas sem duplicar UI: aqui fazemos o mesmo layout com chips.
             Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -73,6 +72,7 @@ class FinanceFiltersCard extends StatelessWidget {
                   itemLabel: (v) => v.toString(),
                   onSelected: onYearChanged,
                 ),
+
                 ChipMenu<int>(
                   icon: Icons.date_range_outlined,
                   label: month == 0 ? 'Ano inteiro' : _monthName(month),
@@ -86,13 +86,21 @@ class FinanceFiltersCard extends StatelessWidget {
                   label: _typeLabel(type),
                   items: const ['all', 'income', 'expense'],
                   itemLabel: _typeLabel,
-                  onSelected: onTypeChanged,
+                  onSelected: (v) {
+                    onTypeChanged(v);
+
+                    // Nota: este widget é Stateless, por isso não consegue
+                    // "setState". Quem usa este widget (parent) deve, ao mudar o type,
+                    // validar/resolver a category (ex: se deixou de existir => 'all').
+                    //
+                    // Mesmo assim, o `safeCategory` acima evita UI quebrada.
+                  },
                 ),
 
                 ChipMenu<String>(
                   icon: Icons.category_outlined,
-                  label: category == 'all' ? 'Todas' : category,
-                  items: categories,
+                  label: safeCategory == 'all' ? 'Todas' : safeCategory,
+                  items: categoryItems,
                   itemLabel: (v) => v == 'all' ? 'Todas' : v,
                   onSelected: onCategoryChanged,
                 ),

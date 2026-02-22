@@ -1,5 +1,6 @@
 import 'package:amba_new/features/finances/cubit/add_movement_cubit.dart';
 import 'package:amba_new/features/finances/cubit/add_movement_state.dart';
+import 'package:amba_new/features/finances/model/finance_categories.dart';
 import 'package:amba_new/features/finances/model/financial_movement.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,34 +23,9 @@ class _AddMovementPageState extends State<AddMovementPage> {
   FinanceType type = FinanceType.expense;
   String category = 'Outros';
 
-  // ----------------------------
-  // Categorias
-  // ----------------------------
-
-  static const _incomeCategories = <String>[
-    'Quotas',
-    'Donativos',
-    'Bar',
-    'Eventos',
-    'Subsídios',
-    'Multas',
-    'Outros',
-  ];
-
-  static const _expenseCategories = <String>[
-    'Renda',
-    'Água',
-    'Luz',
-    'Internet',
-    'Material',
-    'Manutenção',
-    'Eventos',
-    'Impostos/Taxas',
-    'Outros',
-  ];
-
-  List<String> get _currentCategories =>
-      type == FinanceType.income ? _incomeCategories : _expenseCategories;
+  List<String> get _currentCategories => type == FinanceType.income
+      ? FinanceCategories.income
+      : FinanceCategories.expense;
 
   @override
   void initState() {
@@ -262,7 +238,7 @@ class _AddMovementPageState extends State<AddMovementPage> {
       type: type,
       year: widget.year,
       month: widget.month,
-      category: category,
+      category: category.trim(),
     );
   }
 }
