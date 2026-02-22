@@ -40,33 +40,6 @@ class _FinancePageState extends State<FinancePage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 120.0),
-        child: FloatingActionButton(
-          heroTag: 'AA',
-          child: const Icon(Icons.add),
-          onPressed: () async {
-            final ok = await Navigator.of(context).push<bool>(
-              MaterialPageRoute(
-                builder: (_) => BlocProvider(
-                  create: (context) => AddMovementCubit(),
-                  child: AddMovementPage(
-                    year: year,
-                    month: month == 0 ? DateTime.now().month : month,
-                  ),
-                ),
-              ),
-            );
-
-            if (ok == true && mounted) {
-              context.read<FinanceCubit>().fetchMovements(
-                year: year,
-                month: month,
-              );
-            }
-          },
-        ),
-      ),
       body: RefreshIndicator(
         onRefresh: () async {
           await context.read<FinanceCubit>().fetchMovements(
@@ -190,11 +163,41 @@ class _FinancePageState extends State<FinancePage> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
-                    child: Text(
-                      'Movimentos',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Movimentos',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () async {
+                            final ok = await Navigator.of(context).push<bool>(
+                              MaterialPageRoute(
+                                builder: (_) => BlocProvider(
+                                  create: (context) => AddMovementCubit(),
+                                  child: AddMovementPage(
+                                    year: year,
+                                    month: month == 0
+                                        ? DateTime.now().month
+                                        : month,
+                                  ),
+                                ),
+                              ),
+                            );
+
+                            if (ok == true && mounted) {
+                              context.read<FinanceCubit>().fetchMovements(
+                                year: year,
+                                month: month,
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.add),
+                        ),
+                      ],
                     ),
                   ),
                 ),
