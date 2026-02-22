@@ -165,8 +165,8 @@ class _MainScreenState extends State<MainScreen> {
                         },
                         tabs: const [
                           GButton(
-                            icon: Icons.home_rounded,
-                            text: 'Home',
+                            icon: Icons.person_2_outlined,
+                            text: 'Sócios',
                             style: GnavStyle.google,
                           ),
                           GButton(
