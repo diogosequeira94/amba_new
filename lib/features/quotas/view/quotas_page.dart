@@ -1,8 +1,10 @@
+import 'package:amba_new/features/quotas/services/quotas_pdf_service.dart';
 import 'package:amba_new/features/quotas/view/widgets/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:printing/printing.dart';
 
 import '../cubit/quotas_cubit.dart';
 import '../cubit/quotas_state.dart';
@@ -60,6 +62,34 @@ class _QuotasPageState extends State<QuotasPage> {
                   pinned: true,
                   elevation: 0,
                   surfaceTintColor: theme.colorScheme.surface,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.picture_as_pdf_outlined),
+                      onPressed: () async {
+                        final state = context.read<QuotasCubit>().state;
+                        if (state is! QuotasSuccess) return;
+
+                        // Usa a tua lista filtrada (o que estás a ver)
+                        final items = filtered;
+
+                        final totals = _computeTotals(
+                          filtered,
+                          year: year,
+                          month: month,
+                        );
+
+                        final bytes = await QuotaPdfService().buildQuotasReport(
+                          items: items,
+                          year: year,
+                          month: month,
+                          totalAmount: totals.totalAmount,
+                          totalMonths: totals.quotaCount,
+                        );
+
+                        await Printing.layoutPdf(onLayout: (_) async => bytes);
+                      },
+                    ),
+                  ],
                   title: const Text('Quotas'),
                   bottom: PreferredSize(
                     preferredSize: const Size.fromHeight(12),

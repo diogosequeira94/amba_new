@@ -1,9 +1,12 @@
+import 'package:amba_new/features/finances/cubit/add_movement_cubit.dart';
 import 'package:amba_new/features/finances/cubit/financial_state.dart';
 import 'package:amba_new/features/finances/model/financial_movement.dart';
+import 'package:amba_new/features/finances/services/finances_pdf_service.dart';
 import 'package:amba_new/features/finances/view/add_movement_page.dart';
 import 'package:amba_new/features/finances/view/widget/finance_filters_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:printing/printing.dart';
 
 import '../cubit/financial_cubit.dart';
 
@@ -45,9 +48,12 @@ class _FinancePageState extends State<FinancePage> {
           onPressed: () async {
             final ok = await Navigator.of(context).push<bool>(
               MaterialPageRoute(
-                builder: (_) => AddMovementPage(
-                  year: year,
-                  month: month == 0 ? DateTime.now().month : month,
+                builder: (_) => BlocProvider(
+                  create: (context) => AddMovementCubit(),
+                  child: AddMovementPage(
+                    year: year,
+                    month: month == 0 ? DateTime.now().month : month,
+                  ),
                 ),
               ),
             );
@@ -90,6 +96,29 @@ class _FinancePageState extends State<FinancePage> {
                 SliverAppBar(
                   pinned: true,
                   elevation: 0,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.picture_as_pdf_outlined),
+                      onPressed: items.isEmpty
+                          ? null
+                          : () async {
+                              final totals = _computeTotals(items);
+
+                              final bytes = await FinancePdfService()
+                                  .buildFinanceReport(
+                                    items: items,
+                                    year: year,
+                                    month: month,
+                                    income: totals.income,
+                                    expense: totals.expense,
+                                  );
+
+                              await Printing.layoutPdf(
+                                onLayout: (_) async => bytes,
+                              );
+                            },
+                    ),
+                  ],
                   surfaceTintColor: theme.colorScheme.surface,
                   title: const Text('Finanças'),
                   bottom: PreferredSize(
@@ -196,6 +225,7 @@ class _FinancePageState extends State<FinancePage> {
                                 borderRadius: BorderRadius.circular(18),
                               ),
                               child: ListTile(
+                                onTap: () => _openMovementDetails(context, m),
                                 leading: Container(
                                   width: 44,
                                   height: 44,
@@ -245,6 +275,157 @@ class _FinancePageState extends State<FinancePage> {
         ),
       ),
     );
+  }
+
+  void _openMovementDetails(BuildContext context, FinancialMovement m) {
+    final theme = Theme.of(context);
+    final isIncome = m.type == FinanceType.income;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            8,
+            16,
+            16 + MediaQuery.of(context).padding.bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color:
+                          (isIncome
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.error)
+                              .withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      isIncome ? Icons.trending_up : Icons.trending_down,
+                      color: isIncome
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.error,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Detalhe do movimento',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              _detailRow('Tipo', isIncome ? 'Receita' : 'Despesa'),
+              _detailRow('Categoria', m.category),
+              _detailRow('Título', m.title, multiline: true),
+              _detailRow(
+                'Observações',
+                m.notes.isEmpty ? '-' : m.notes,
+                multiline: true,
+              ),
+              _detailRow('Data', _fmtDate(m.createdAt)),
+
+              const SizedBox(height: 16),
+
+              Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Montante',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        '${isIncome ? '+' : '-'}${m.amount.toStringAsFixed(2)} €',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          color: isIncome
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.error,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.delete_outline),
+                  label: const Text('Apagar'),
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    await _confirmDelete(m); // já tens isto
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _detailRow(String label, String value, {bool multiline = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(
+        crossAxisAlignment: multiline
+            ? CrossAxisAlignment.start
+            : CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 110,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              value,
+              maxLines: multiline ? null : 1,
+              overflow: multiline
+                  ? TextOverflow.visible
+                  : TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _fmtDate(DateTime d) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${two(d.day)}/${two(d.month)}/${d.year}';
   }
 
   Future<void> _confirmDelete(FinancialMovement m) async {

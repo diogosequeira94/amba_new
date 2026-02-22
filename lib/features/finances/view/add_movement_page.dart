@@ -1,7 +1,6 @@
 import 'package:amba_new/features/finances/cubit/add_movement_cubit.dart';
 import 'package:amba_new/features/finances/cubit/add_movement_state.dart';
 import 'package:amba_new/features/finances/model/financial_movement.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -23,6 +22,41 @@ class _AddMovementPageState extends State<AddMovementPage> {
   FinanceType type = FinanceType.expense;
   String category = 'Outros';
 
+  // ----------------------------
+  // Categorias
+  // ----------------------------
+
+  static const _incomeCategories = <String>[
+    'Quotas',
+    'Donativos',
+    'Bar',
+    'Eventos',
+    'Subsídios',
+    'Multas',
+    'Outros',
+  ];
+
+  static const _expenseCategories = <String>[
+    'Renda',
+    'Água',
+    'Luz',
+    'Internet',
+    'Material',
+    'Manutenção',
+    'Eventos',
+    'Impostos/Taxas',
+    'Outros',
+  ];
+
+  List<String> get _currentCategories =>
+      type == FinanceType.income ? _incomeCategories : _expenseCategories;
+
+  @override
+  void initState() {
+    super.initState();
+    category = _currentCategories.first;
+  }
+
   @override
   void dispose() {
     titleCtrl.dispose();
@@ -36,8 +70,6 @@ class _AddMovementPageState extends State<AddMovementPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return BlocProvider(
       create: (_) => AddMovementCubit(),
       child: BlocListener<AddMovementCubit, AddMovementState>(
@@ -47,11 +79,14 @@ class _AddMovementPageState extends State<AddMovementPage> {
               const SnackBar(content: Text('A guardar movimento...')),
             );
           }
+
           if (state is AddMovementSuccess) {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
             Navigator.of(context).pop(true);
           }
+
           if (state is AddMovementFailure) {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
@@ -72,6 +107,9 @@ class _AddMovementPageState extends State<AddMovementPage> {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
+                        // ----------------------------
+                        // Tipo
+                        // ----------------------------
                         DropdownButtonFormField<FinanceType>(
                           value: type,
                           decoration: const InputDecoration(
@@ -88,10 +126,49 @@ class _AddMovementPageState extends State<AddMovementPage> {
                               child: Text('Despesa'),
                             ),
                           ],
-                          onChanged: (v) => setState(() => type = v!),
+                          onChanged: (v) {
+                            if (v == null) return;
+
+                            setState(() {
+                              type = v;
+
+                              // Se categoria atual não existir no novo tipo, reset
+                              if (!_currentCategories.contains(category)) {
+                                category = _currentCategories.first;
+                              }
+                            });
+                          },
                         ),
+
                         const SizedBox(height: 12),
 
+                        // ----------------------------
+                        // Categoria
+                        // ----------------------------
+                        DropdownButtonFormField<String>(
+                          value: _currentCategories.contains(category)
+                              ? category
+                              : _currentCategories.first,
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.category_outlined),
+                            labelText: 'Categoria',
+                          ),
+                          items: _currentCategories
+                              .map(
+                                (c) =>
+                                    DropdownMenuItem(value: c, child: Text(c)),
+                              )
+                              .toList(),
+                          onChanged: (v) => setState(
+                            () => category = v ?? _currentCategories.first,
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // ----------------------------
+                        // Título
+                        // ----------------------------
                         TextFormField(
                           controller: titleCtrl,
                           decoration: const InputDecoration(
@@ -99,8 +176,12 @@ class _AddMovementPageState extends State<AddMovementPage> {
                             labelText: 'Título',
                           ),
                         ),
+
                         const SizedBox(height: 12),
 
+                        // ----------------------------
+                        // Montante
+                        // ----------------------------
                         TextFormField(
                           controller: amountCtrl,
                           keyboardType: const TextInputType.numberWithOptions(
@@ -111,8 +192,12 @@ class _AddMovementPageState extends State<AddMovementPage> {
                             labelText: 'Montante (€)',
                           ),
                         ),
+
                         const SizedBox(height: 12),
 
+                        // ----------------------------
+                        // Observações
+                        // ----------------------------
                         TextFormField(
                           controller: notesCtrl,
                           maxLines: 3,
@@ -125,15 +210,30 @@ class _AddMovementPageState extends State<AddMovementPage> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 14),
 
-                SizedBox(
-                  height: 54,
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.save_outlined),
-                    label: const Text('Guardar'),
-                    onPressed: () => _submit(context),
-                  ),
+                BlocBuilder<AddMovementCubit, AddMovementState>(
+                  builder: (context, state) {
+                    final busy = state is AddMovementSubmitting;
+
+                    return SizedBox(
+                      height: 54,
+                      child: ElevatedButton.icon(
+                        icon: busy
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.save_outlined),
+                        label: Text(busy ? 'A guardar...' : 'Guardar'),
+                        onPressed: busy ? null : () => _submit(context),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
