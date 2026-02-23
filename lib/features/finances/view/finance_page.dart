@@ -338,12 +338,13 @@ class _FinancePageState extends State<FinancePage> {
               _detailRow('Tipo', isIncome ? 'Receita' : 'Despesa'),
               _detailRow('Categoria', m.category),
               _detailRow('Título', m.title, multiline: true),
+              _detailRow('Ocorreu em', _fmtDate(m.occurredAt)),
               _detailRow(
                 'Observações',
                 m.notes.isEmpty ? '-' : m.notes,
                 multiline: true,
               ),
-              _detailRow('Data', _fmtDate(m.createdAt)),
+              _detailRow('Criado em', _fmtDate(m.createdAt)),
 
               const SizedBox(height: 16),
 

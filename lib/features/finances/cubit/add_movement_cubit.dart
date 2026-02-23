@@ -11,6 +11,7 @@ class AddMovementCubit extends Cubit<AddMovementState> {
     required double amount,
     required String notes,
     required FinanceType type,
+    required DateTime occurredAt,
     required int year,
     required int month,
     String category = 'Outros',
@@ -20,14 +21,15 @@ class AddMovementCubit extends Cubit<AddMovementState> {
     try {
       final movement = FinancialMovement(
         id: '',
-        title: title,
+        title: title.trim(),
         amount: amount,
-        notes: notes,
+        notes: notes.trim(),
         type: type,
-        category: category,
+        category: category.trim(),
+        occurredAt: DateTime(occurredAt.year, occurredAt.month, occurredAt.day),
         createdAt: DateTime.now(),
-        year: year,
-        month: month,
+        year: occurredAt.year,
+        month: occurredAt.month,
       );
 
       await FirebaseFirestore.instance

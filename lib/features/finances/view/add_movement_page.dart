@@ -23,6 +23,9 @@ class _AddMovementPageState extends State<AddMovementPage> {
   FinanceType type = FinanceType.expense;
   String category = 'Outros';
 
+  // ✅ Data do acontecimento
+  DateTime occurredAt = DateTime.now();
+
   List<String> get _currentCategories => type == FinanceType.income
       ? FinanceCategories.income
       : FinanceCategories.expense;
@@ -31,6 +34,9 @@ class _AddMovementPageState extends State<AddMovementPage> {
   void initState() {
     super.initState();
     category = _currentCategories.first;
+
+    // Default: hoje (mas podes adaptar ao ano/mês do ecrã)
+    occurredAt = DateTime.now();
   }
 
   @override
@@ -108,7 +114,6 @@ class _AddMovementPageState extends State<AddMovementPage> {
                             setState(() {
                               type = v;
 
-                              // Se categoria atual não existir no novo tipo, reset
                               if (!_currentCategories.contains(category)) {
                                 category = _currentCategories.first;
                               }
@@ -137,6 +142,42 @@ class _AddMovementPageState extends State<AddMovementPage> {
                               .toList(),
                           onChanged: (v) => setState(
                             () => category = v ?? _currentCategories.first,
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // ----------------------------
+                        // Data do acontecimento ✅
+                        // ----------------------------
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: occurredAt,
+                              firstDate: DateTime(2020, 1, 1),
+                              lastDate: DateTime.now().add(
+                                const Duration(days: 365),
+                              ),
+                            );
+
+                            if (picked == null) return;
+
+                            setState(() {
+                              occurredAt = DateTime(
+                                picked.year,
+                                picked.month,
+                                picked.day,
+                              );
+                            });
+                          },
+                          child: InputDecorator(
+                            decoration: const InputDecoration(
+                              prefixIcon: Icon(Icons.event_outlined),
+                              labelText: 'Data do acontecimento',
+                            ),
+                            child: Text(_formatDatePt(occurredAt)),
                           ),
                         ),
 
@@ -236,9 +277,28 @@ class _AddMovementPageState extends State<AddMovementPage> {
       amount: amount,
       notes: notes,
       type: type,
-      year: widget.year,
-      month: widget.month,
       category: category.trim(),
+      occurredAt: occurredAt, // ✅ aqui
+      year: widget.year, // (podes ignorar estes no cubit, mas deixo por compat)
+      month: widget.month,
     );
+  }
+
+  static String _formatDatePt(DateTime d) {
+    const months = [
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
+    ];
+    return '${d.day.toString().padLeft(2, '0')} ${months[d.month - 1]} ${d.year}';
   }
 }
