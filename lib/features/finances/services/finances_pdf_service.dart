@@ -41,6 +41,19 @@ class FinancePdfService {
       return months[m - 1];
     }
 
+    String fmtDate(DateTime d) =>
+        '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+
+    // ✅ data para imprimir: occurredAt (fallback createdAt)
+    DateTime displayDate(FinancialMovement m) {
+      final d = m.occurredAt;
+
+      // fallback extra caso venham datas "maradas"
+      if (d.year < 2000) return m.createdAt;
+
+      return d;
+    }
+
     final period = month == 0
         ? 'Ano inteiro $year'
         : '${monthLabel(month)} $year';
@@ -85,9 +98,8 @@ class FinancePdfService {
             },
             headers: const ['Data', 'Tipo', 'Categoria', 'Título', 'Montante'],
             data: items.map((m) {
-              final d = m.createdAt;
-              final dateStr =
-                  '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+              final d = displayDate(m); // ✅ aqui
+              final dateStr = fmtDate(d);
               final isIncome = m.type == FinanceType.income;
 
               return [
