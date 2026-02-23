@@ -9,34 +9,31 @@ class FinanceCubit extends Cubit<FinanceState> {
   Future<void> fetchMovements({
     required int year,
     int month = 0,
-    String type = 'all', // 'all' | 'income' | 'expense'
-    String category = 'all', // 'all' | ...
+    String type = 'all',
+    String category = 'all',
   }) async {
     emit(FinanceLoading());
 
     try {
-      // 1) Só filtra ano/mês no Firestore (sem orderBy)
+      // Busca só pelo ano (menos dependência em month gravado errado)
       Query<Map<String, dynamic>> q = FirebaseFirestore.instance
           .collection('financial_movements')
           .where('year', isEqualTo: year);
 
-      if (month != 0) {
-        q = q.where('month', isEqualTo: month);
-      }
-
       final snap = await q.get();
-
-      // 2) Converte
       final list = snap.docs.map(FinancialMovement.fromDoc).toList();
 
-      // 3) Ordena no client por createdAt desc
-      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      // Ordena por occurredAt desc
+      list.sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
 
-      // 4) Aplica filtros no client (para evitar índices extra)
+      // ✅ Filtra pelo occurredAt REAL, não pelo campo month gravado
       final filtered = list.where((m) {
+        final okMonth = (month == 0) ? true : (m.occurredAt.month == month);
         final okType = (type == 'all') ? true : (m.typeStr == type);
         final okCat = (category == 'all') ? true : (m.category == category);
-        return okType && okCat;
+        final okYear = m.occurredAt.year == year;
+
+        return okYear && okMonth && okType && okCat;
       }).toList();
 
       emit(FinanceSuccess(filtered));
@@ -49,6 +46,8 @@ class FinanceCubit extends Cubit<FinanceState> {
     required String id,
     required int yearToRefresh,
     required int monthToRefresh,
+    String typeToRefresh = 'all',
+    String categoryToRefresh = 'all',
   }) async {
     try {
       await FirebaseFirestore.instance
@@ -56,7 +55,13 @@ class FinanceCubit extends Cubit<FinanceState> {
           .doc(id)
           .delete();
 
-      await fetchMovements(year: yearToRefresh, month: monthToRefresh);
+      // refresca mantendo filtros (opcional mas UX melhor)
+      await fetchMovements(
+        year: yearToRefresh,
+        month: monthToRefresh,
+        type: typeToRefresh,
+        category: categoryToRefresh,
+      );
     } catch (e) {
       emit(FinanceFailure(e.toString()));
     }

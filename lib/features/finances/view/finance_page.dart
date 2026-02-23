@@ -192,6 +192,8 @@ class _FinancePageState extends State<FinancePage> {
                               context.read<FinanceCubit>().fetchMovements(
                                 year: year,
                                 month: month,
+                                type: type,
+                                category: category,
                               );
                             }
                           },
@@ -457,6 +459,8 @@ class _FinancePageState extends State<FinancePage> {
       id: m.id,
       yearToRefresh: year,
       monthToRefresh: month,
+      typeToRefresh: type,
+      categoryToRefresh: category,
     );
 
     if (!mounted) return;

@@ -39,10 +39,12 @@ class FinancialMovement {
     final data = doc.data() ?? {};
 
     final createdTs = data['createdAt'];
-    final createdAt =
-    (createdTs is Timestamp) ? createdTs.toDate() : DateTime.now();
-
     final occurredTs = data['occurredAt'];
+
+    final createdAt = (createdTs is Timestamp)
+        ? createdTs.toDate()
+        : ((occurredTs is Timestamp) ? occurredTs.toDate() : DateTime(1970));
+
     final occurredAt = (occurredTs is Timestamp)
         ? occurredTs.toDate()
         : createdAt; // fallback p/ docs antigos
