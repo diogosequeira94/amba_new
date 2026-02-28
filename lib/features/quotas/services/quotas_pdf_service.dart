@@ -12,12 +12,17 @@ class QuotaPdfService {
     required double totalAmount,
     required int totalMonths,
   }) async {
+    // Fonts
     final regularFont = pw.Font.ttf(
       await rootBundle.load('assets/fonts/Roboto-Regular.ttf'),
     );
     final boldFont = pw.Font.ttf(
       await rootBundle.load('assets/fonts/Roboto-Bold.ttf'),
     );
+
+    // ✅ Logo AMBA
+    final logoBytes = await rootBundle.load('assets/icon/icon.jpg');
+    final logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
 
     final doc = pw.Document(
       theme: pw.ThemeData.withFont(base: regularFont, bold: boldFont),
@@ -41,22 +46,56 @@ class QuotaPdfService {
       return months[m - 1];
     }
 
-    final period = month == 0
-        ? 'Ano inteiro $year'
-        : '${monthLabel(month)} $year';
+    String fmtDate(DateTime d) =>
+        '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+
+    final period =
+    month == 0 ? 'Ano inteiro $year' : '${monthLabel(month)} $year';
 
     doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(24),
         build: (context) => [
-          pw.Text(
-            'Relatório de Quotas',
-            style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+          // ✅ Header com logo
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: [
+              pw.Image(
+                logoImage,
+                width: 60,
+                height: 60,
+              ),
+              pw.SizedBox(width: 16),
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      'AMBA',
+                      style: pw.TextStyle(
+                        fontSize: 18,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      'Relatório de Quotas',
+                      style: pw.TextStyle(
+                        fontSize: 16,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text('Período: $period'),
+                  ],
+                ),
+              ),
+            ],
           ),
-          pw.SizedBox(height: 6),
-          pw.Text('Período: $period'),
+
           pw.SizedBox(height: 10),
+
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
@@ -65,6 +104,7 @@ class QuotaPdfService {
               pw.Text('Registos: ${items.length}'),
             ],
           ),
+
           pw.SizedBox(height: 16),
 
           pw.Table.fromTextArray(
@@ -83,9 +123,7 @@ class QuotaPdfService {
             },
             headers: const ['Sócio', 'Períodos', 'Data', 'Total'],
             data: items.map((t) {
-              final d = t.date;
-              final dateStr =
-                  '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+              final dateStr = fmtDate(t.date);
               return [
                 t.title,
                 t.subtitle,

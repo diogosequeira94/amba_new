@@ -1,25 +1,26 @@
 class FinanceCategories {
   static const income = <String>[
-    'Quotas',
-    'Donativos',
-    'Rendas',
     'Aluguer Salão',
+    'Donativos',
     'Festas/Eventos',
+    'Quotas',
+    'Rendas',
     'Outros',
   ];
 
   static const expense = <String>[
-    'Géneros Alimentares',
-    'Bebidas',
-    'instalações/Manutenção',
     'Água',
-    'Gás',
-    'Eletricidade',
+    'Aquisição de Equipamentos',
+    'Bebidas',
     'Comunicações',
-    'Higiene/Limpeza',
-    'Mat.Escritório',
     'Condomínio',
+    'Eletricidade',
     'Evorapoc',
+    'Gás',
+    'Géneros Alimentares',
+    'Higiene/Limpeza',
+    'instalações/Manutenção',
+    'Mat.Escritório',
     'ZSGO',
     'Outras',
   ];

@@ -12,12 +12,16 @@ class FinancePdfService {
     required double income,
     required double expense,
   }) async {
+    // Fonts
     final regularFont = pw.Font.ttf(
       await rootBundle.load('assets/fonts/Roboto-Regular.ttf'),
     );
     final boldFont = pw.Font.ttf(
       await rootBundle.load('assets/fonts/Roboto-Bold.ttf'),
     );
+
+    final logoBytes = await rootBundle.load('assets/icon/icon.jpg');
+    final logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
 
     final doc = pw.Document(
       theme: pw.ThemeData.withFont(base: regularFont, bold: boldFont),
@@ -54,23 +58,57 @@ class FinancePdfService {
       return d;
     }
 
-    final period = month == 0
-        ? 'Ano inteiro $year'
-        : '${monthLabel(month)} $year';
+    final period =
+    month == 0 ? 'Ano inteiro $year' : '${monthLabel(month)} $year';
     final balance = income - expense;
+
+    // (Opcional) garante ordenação por data do acontecimento no PDF
+    items.sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
 
     doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(24),
         build: (context) => [
-          pw.Text(
-            'Relatório de Finanças',
-            style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+          // ✅ Header com logo
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: [
+              pw.Image(
+                logoImage,
+                width: 60,
+                height: 60,
+              ),
+              pw.SizedBox(width: 16),
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      'AMBA',
+                      style: pw.TextStyle(
+                        fontSize: 18,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      'Relatório de Finanças',
+                      style: pw.TextStyle(
+                        fontSize: 16,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text('Período: $period'),
+                  ],
+                ),
+              ),
+            ],
           ),
-          pw.SizedBox(height: 6),
-          pw.Text('Período: $period'),
+
           pw.SizedBox(height: 10),
+
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
@@ -79,6 +117,7 @@ class FinancePdfService {
               pw.Text('Saldo: ${balance.toStringAsFixed(2)} €'),
             ],
           ),
+
           pw.SizedBox(height: 16),
 
           pw.Table.fromTextArray(
@@ -98,7 +137,7 @@ class FinancePdfService {
             },
             headers: const ['Data', 'Tipo', 'Categoria', 'Título', 'Montante'],
             data: items.map((m) {
-              final d = displayDate(m); // ✅ aqui
+              final d = displayDate(m); // ✅ occurredAt fallback createdAt
               final dateStr = fmtDate(d);
               final isIncome = m.type == FinanceType.income;
 
