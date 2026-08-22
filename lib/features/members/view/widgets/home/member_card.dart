@@ -31,12 +31,7 @@ class MemberCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           child: Row(
             children: [
-              HomeAvatar(
-                name: name,
-                avatarUrl: avatarUrl,
-                radius: 22,
-                memberNumber: memberNumber,
-              ),
+              HomeAvatar(name: name, avatarUrl: avatarUrl, radius: 22),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

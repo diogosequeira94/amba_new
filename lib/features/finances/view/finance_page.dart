@@ -3,6 +3,7 @@ import 'package:amba_new/features/finances/cubit/financial_state.dart';
 import 'package:amba_new/features/finances/model/financial_movement.dart';
 import 'package:amba_new/features/finances/services/finances_pdf_service.dart';
 import 'package:amba_new/features/finances/view/add_movement_page.dart';
+import 'package:amba_new/features/finances/view/edit_movement_page.dart';
 import 'package:amba_new/features/finances/view/widget/finance_filters_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -380,17 +381,36 @@ class _FinancePageState extends State<FinancePage> {
 
               const SizedBox(height: 10),
 
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.delete_outline),
-                  label: const Text('Apagar'),
-                  onPressed: () async {
-                    Navigator.pop(context);
-                    await _confirmDelete(m); // já tens isto
-                  },
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 52,
+                      child: FilledButton.icon(
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text('Editar'),
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          await _openEdit(m);
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: SizedBox(
+                      height: 52,
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.delete_outline),
+                        label: const Text('Apagar'),
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          await _confirmDelete(m); // já tens isto
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -432,6 +452,26 @@ class _FinancePageState extends State<FinancePage> {
   String _fmtDate(DateTime d) {
     String two(int n) => n.toString().padLeft(2, '0');
     return '${two(d.day)}/${two(d.month)}/${d.year}';
+  }
+
+  Future<void> _openEdit(FinancialMovement m) async {
+    final ok = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => EditMovementPage(movement: m)),
+    );
+
+    if (ok != true || !mounted) return;
+
+    await context.read<FinanceCubit>().fetchMovements(
+      year: year,
+      month: month,
+      type: type,
+      category: category,
+    );
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Movimento atualizado')));
   }
 
   Future<void> _confirmDelete(FinancialMovement m) async {

@@ -1,16 +1,15 @@
+import 'package:amba_new/utils/name_extensions.dart';
 import 'package:flutter/material.dart';
 
 class HomeAvatar extends StatelessWidget {
   final String name;
   final String? avatarUrl;
-  final String? memberNumber;
   final double radius;
 
   const HomeAvatar({
     super.key,
     required this.name,
     required this.avatarUrl,
-    required this.memberNumber,
     this.radius = 22,
   });
 
@@ -18,9 +17,10 @@ class HomeAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final initials = _initials(name);
-    final assetPath = memberNumber != null
-        ? 'assets/${memberNumber!}.jpg'
-        : null;
+
+    // As fotos em assets/ estão nomeadas por primeiro+último nome
+    // (ex.: "plinio-fonseca.jpg"), não pelo número de sócio.
+    final assetPath = name.toPhotoAssetPath();
 
     return CircleAvatar(
       radius: radius,

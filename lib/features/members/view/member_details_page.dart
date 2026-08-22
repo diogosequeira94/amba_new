@@ -1,3 +1,4 @@
+import 'package:amba_new/utils/name_extensions.dart';
 import 'package:amba_new/features/members/cubit/members_cubit.dart';
 import 'package:amba_new/features/members/view/widgets/member_quotas_section.dart';
 import 'package:amba_new/features/members/models/member.dart';
@@ -240,11 +241,7 @@ class _ProfileHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-                _Avatar(
-                  name: fullName,
-                  radius: 50,
-                  memberNumber: member.memberNumber ?? '',
-                ),
+                _Avatar(name: fullName, radius: 50),
                 const SizedBox(height: 14),
                 Flexible(
                   child: Text(
@@ -282,14 +279,9 @@ class _ProfileHeader extends StatelessWidget {
 
 class _Avatar extends StatelessWidget {
   final String name;
-  final String? memberNumber;
   final double radius;
 
-  const _Avatar({
-    required this.name,
-    required this.memberNumber,
-    this.radius = 28,
-  });
+  const _Avatar({required this.name, this.radius = 28});
 
   @override
   Widget build(BuildContext context) {
@@ -297,9 +289,9 @@ class _Avatar extends StatelessWidget {
 
     final initials = _initials(name);
 
-    final assetPath = memberNumber != null
-        ? 'assets/${memberNumber!}.jpg'
-        : null;
+    // As fotos em assets/ estão nomeadas por primeiro+último nome
+    // (ex.: "plinio-fonseca.jpg"), não pelo número de sócio.
+    final assetPath = name.toPhotoAssetPath();
 
     return CircleAvatar(
       radius: radius,

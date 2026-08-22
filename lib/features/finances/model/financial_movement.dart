@@ -77,5 +77,47 @@ class FinancialMovement {
     'month': occurredAt.month,
   };
 
+  /// Mapa usado no update (edição) de um movimento já existente.
+  /// Não mexe no `createdAt`, para preservar a data de criação original.
+  Map<String, dynamic> toUpdateMap() => {
+    'title': title.trim(),
+    'amount': amount,
+    'notes': notes.trim(),
+    'type': financeTypeToString(type),
+    'category': category.trim(),
+    'occurredAt': Timestamp.fromDate(
+      DateTime(occurredAt.year, occurredAt.month, occurredAt.day),
+    ),
+    'year': occurredAt.year,
+    'month': occurredAt.month,
+    'updatedAt': FieldValue.serverTimestamp(),
+  };
+
+  FinancialMovement copyWith({
+    String? id,
+    String? title,
+    double? amount,
+    String? notes,
+    FinanceType? type,
+    String? category,
+    DateTime? occurredAt,
+    DateTime? createdAt,
+    int? year,
+    int? month,
+  }) {
+    return FinancialMovement(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      amount: amount ?? this.amount,
+      notes: notes ?? this.notes,
+      type: type ?? this.type,
+      category: category ?? this.category,
+      occurredAt: occurredAt ?? this.occurredAt,
+      createdAt: createdAt ?? this.createdAt,
+      year: year ?? this.year,
+      month: month ?? this.month,
+    );
+  }
+
   String get typeStr => financeTypeToString(type);
 }

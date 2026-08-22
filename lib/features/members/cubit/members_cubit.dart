@@ -61,13 +61,21 @@ class MembersCubit extends Cubit<MembersState> {
   }
 
   void searchBoxChanged(String query) {
+    final trimmedQuery = query.trim();
+
+    // Pesquisa só por nome e número de sócio.
+    // O telemóvel está de propósito fora: procurar o sócio "3" trazia
+    // todos os que tinham um 3 no número de telefone.
+    //
+    // O número de sócio é comparado de forma exata (não "contains"), senão
+    // procurar o sócio "3" trazia também o 13, o 23, o 30, etc.
     var tempList = allMemberList
         .where(
           (member) =>
-              (member.name!.toLowerCase().contains(query.toLowerCase())) ||
-              member.memberNumber!.contains(query) ||
-              (member.phoneNumber != null &&
-                  member.phoneNumber!.contains(query)),
+              (member.name!.toLowerCase().contains(
+                trimmedQuery.toLowerCase(),
+              )) ||
+              member.memberNumber!.trim() == trimmedQuery,
         )
         .toList();
     emit(
