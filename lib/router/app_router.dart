@@ -5,6 +5,7 @@ import 'package:amba_new/features/members/models/phone_message_member.dart';
 import 'package:amba_new/features/members/view/member_details_page.dart';
 import 'package:amba_new/features/members/view/messages_page.dart';
 import 'package:amba_new/features/members/models/member.dart';
+import 'package:amba_new/features/auth/view/login_page.dart';
 import 'package:amba_new/view/amba_splash.dart';
 import 'package:amba_new/features/members/view/form_page.dart';
 import 'package:amba_new/view/main_screen.dart';
@@ -31,6 +32,9 @@ class AppRouter {
     switch (routeSettings.name) {
       case '/':
         return MaterialPageRoute(builder: (_) => const SplashScreen());
+
+      case '/login':
+        return MaterialPageRoute(builder: (_) => const LoginPage());
 
       case '/pin':
         return MaterialPageRoute(builder: (_) => const PinLockPage());

@@ -9,7 +9,8 @@ plugins {
 
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
-if (keystorePropertiesFile.exists()) {
+val hasKeystore = keystorePropertiesFile.exists()
+if (hasKeystore) {
     FileInputStream(keystorePropertiesFile).use { fis ->
         keystoreProperties.load(fis)
     }
@@ -37,18 +38,33 @@ android {
         versionName = flutter.versionName
     }
 
+    // Este bloco é avaliado para todos os build types, por isso sem a guarda o
+    // `file(null)` rebentava até um `flutter build apk --debug` num clone limpo.
     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties.getProperty("keyAlias")
-            keyPassword = keystoreProperties.getProperty("keyPassword")
-            storeFile = file(keystoreProperties.getProperty("storeFile"))
-            storePassword = keystoreProperties.getProperty("storePassword")
+        if (hasKeystore) {
+            create("release") {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+            }
         }
     }
 
     buildTypes {
         getByName("release") {
-            signingConfig = signingConfigs.getByName("release")
+            // Com key.properties presente nada muda. Sem ele, assina em debug
+            // para o build correr — um APK assim NÃO serve para publicar: a Play
+            // rejeita-o e não actualiza instalações existentes.
+            signingConfig = if (hasKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                logger.warn(
+                    "AVISO: key.properties não encontrado — release assinado em " +
+                        "debug. Não publicar este APK."
+                )
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

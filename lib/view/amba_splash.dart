@@ -1,3 +1,4 @@
+import 'package:amba_new/features/auth/services/auth_service.dart';
 import 'package:amba_new/features/settings/services/pin_service.dart';
 import 'package:flutter/material.dart';
 
@@ -39,6 +40,15 @@ class _SplashScreenState extends State<SplashScreen>
         // garante PIN default em fresh install
         await pin.ensureDefaultPin(defaultPin: '1958');
 
+        // Sem sessão do Firebase o Firestore não devolve nada, por isso o
+        // login vem antes do PIN. A sessão persiste, logo isto só aparece na
+        // primeira utilização ou depois de terminar sessão.
+        if (!AuthService().isSignedIn) {
+          if (!mounted) return;
+          Navigator.of(context).pushReplacementNamed('/login');
+          return;
+        }
+
         final enabled = await pin.isEnabled();
 
         if (!mounted) return;
@@ -51,8 +61,9 @@ class _SplashScreenState extends State<SplashScreen>
 
         if (!mounted) return;
 
-        // fallback: entra na app
-        Navigator.of(context).pushReplacementNamed('/home');
+        // Fallback para o login: sem sessão, '/home' abria uma app vazia com
+        // erros de permissão em vez de dizer o que falta fazer.
+        Navigator.of(context).pushReplacementNamed('/login');
       }
     });
   }

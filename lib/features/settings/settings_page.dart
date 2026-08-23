@@ -1,4 +1,4 @@
-import 'package:amba_new/features/settings/services/pin_service.dart';
+import 'package:amba_new/features/auth/services/auth_service.dart';
 import 'package:amba_new/features/settings/change_pin_page.dart';
 import 'package:amba_new/features/settings/change_quota_amount_page.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +8,6 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(title: const Text('Definições')),
       body: ListView(
@@ -70,6 +68,35 @@ class SettingsPage extends StatelessWidget {
                         ),
                       );
                     }
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.account_circle_outlined),
+                  title: const Text('Conta'),
+                  subtitle: Text(
+                    AuthService().currentUser?.email ?? 'Sem sessão',
+                  ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.logout),
+                  title: const Text('Terminar sessão'),
+                  subtitle: const Text('Volta ao ecrã de entrada'),
+                  onTap: () async {
+                    final navigator = Navigator.of(context);
+                    await AuthService().signOut();
+                    navigator.pushNamedAndRemoveUntil('/login', (_) => false);
                   },
                 ),
               ],
