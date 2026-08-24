@@ -7,9 +7,22 @@ import 'package:google_sign_in/google_sign_in.dart';
 /// projecto só deixam ler e escrever a contas autorizadas, por isso a app tem
 /// mesmo de autenticar — ver SECURITY.md no repositório amba-web.
 class AuthService {
+  /// ID do cliente OAuth **web** do projecto amba-8809b.
+  ///
+  /// Este projecto não usa `google-services.json` — o Firebase é configurado
+  /// pelo `firebase_options.dart`. Sem esse ficheiro o plugin Gradle da Google
+  /// não gera o recurso `default_web_client_id`, e sem ele o `google_sign_in`
+  /// devolve `idToken: null`, que o Firebase recusa.
+  ///
+  /// Passar o `serverClientId` à mão resolve isso sem ter de trazer o
+  /// google-services.json para o projecto.
+  static const _serverClientId =
+      '178830511133-1bnpa07olb1tm0cl0dnag4o2fsnhsr4j.apps.googleusercontent.com';
+
   AuthService({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
       : _auth = auth ?? FirebaseAuth.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn();
+        _googleSignIn = googleSignIn ??
+            GoogleSignIn(serverClientId: _serverClientId);
 
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
@@ -27,6 +40,13 @@ class AuthService {
     if (googleUser == null) return null;
 
     final googleAuth = await googleUser.authentication;
+
+    // Falha cedo e com uma causa legível. Um idToken nulo aqui costuma
+    // significar serverClientId errado ou SHA-1 por registar — e mais à frente
+    // apareceria só como um erro genérico de credencial inválida.
+    if (googleAuth.idToken == null) {
+      throw StateError('missing-id-token');
+    }
 
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
@@ -65,6 +85,11 @@ String describeAuthError(Object error) {
   }
 
   final text = error.toString();
+
+  if (text.contains('missing-id-token')) {
+    return 'O Google não devolveu um token de identidade. Verifica o '
+        'serverClientId e o SHA-1 registado no Firebase.';
+  }
 
   // Erro típico quando falta registar o SHA-1 no Firebase.
   if (text.contains('ApiException: 10')) {
